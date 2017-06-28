@@ -2,6 +2,7 @@
 
 ## Installation
 
+ * `yarn add webpack --global` (if you haven't already)
  * `yarn`
  * `yarn build`
  * Open [chrome://extensions](chrome://extensions)
