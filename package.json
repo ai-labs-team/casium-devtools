@@ -4,13 +4,20 @@
   "description": "Architecture devtools",
   "main": "",
   "scripts": {
-    "build": "webpack panel-ui.js panel-ui.build.js"
+    "build": "webpack panel-ui.js panel-ui.build.js",
+    "watch": "webpack --watch panel-ui.js panel-ui.build.js"
   },
   "author": "",
   "license": "BSD",
   "dependencies": {
+    "json-diff": "^0.5.1",
+    "ramda": "^0.24.1",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
-    "react-inspector": "^2.0.0"
+    "react-fontawesome": "^1.6.1",
+    "react-inspector": "https://github.com/nateabele/react-inspector"
+  },
+  "devDependencies": {
+    "webpack": "^3.5.5"
   }
 }

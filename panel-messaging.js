@@ -18,18 +18,29 @@
   //   name: "ArchDevTools" // Given a Name
   // });
 
-  var backgroundPageConnection = chrome.runtime.connect({
-    name: "ArchDevToolsPanel"
+  var queue = [];
+
+  window.FLUSH_QUEUE = () => {
+    queue.forEach(msg => window.LISTENERS.forEach(processMsg(msg)));
+    queue = [];
+  };
+
+  const processMsg = msg => ([predicate, listener]) => predicate(msg) && listener(msg);
+
+  var backgroundPageConnection = chrome.runtime.connect({ name: 'ArchDevToolsPanel' });
+
+  backgroundPageConnection.onMessage.addListener(message => {
+    window.LISTENERS.length ? window.LISTENERS.forEach(processMsg(message)) : queue.push(message);
   });
 
-  backgroundPageConnection.onMessage.addListener(function (message) {
-    if (message.from === 'Arch') {
-      window.MESSAGES.push(message);
-      window.LISTENERS.forEach(listener => listener(window.MESSAGES));
-    }
-  });
+  window.messageClient = (data) => {
+    backgroundPageConnection.postMessage(Object.assign({
+      from: "ArchDevToolsPanel",
+      tabId: chrome.devtools.inspectedWindow.tabId,
+    }, data));
+  }
 
-  // backgroundPageConnection.postMessage({ message: "test message from devtools to background" });
+  window.messageClient({ state: 'initialized' });
 
   const s = (json) => {
     try { return JSON.stringify(json); } catch (e) { return "{data}"; }
@@ -51,10 +62,3 @@
   // });
 
 }());
-
-// This sends an object to the background page 
-// where it can be relayed to the inspected page
-function sendObjectToInspectedPage(message) {
-  message.tabId = chrome.devtools.inspectedWindow.tabId;
-  chrome.extension.sendMessage(message);
-}

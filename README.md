@@ -2,27 +2,40 @@
 
 ## Installation
 
- * `yarn`
- * `yarn build`
- * Open [chrome://extensions](chrome://extensions)
- * Make sure `[✔] Developer Mode` is ✔'d
- * Click `Load unpacked extension...`
- * Select this directory
- * If DevTools is open, close and reopen it
+ - Open [`chrome://extensions`](chrome://extensions)
+ - Make sure `[✔] Developer Mode` is ✔'d
+ - Click `Load unpacked extension...`
+ - Select this directory
+ - If DevTools is open, close and reopen it
 
+## Development
 
-## @TODO
+ - Follow installation instructions
+ - `yarn`
+ - `yarn build`, or `yarn watch`, to auto-reload on saved changes
+ - Open DevTools in separate window, navigate to `Architecture` tab
+ - `⌘ + Opt + I` to initiate DevTools-ception
+ - With Meta-DevTools window selected, `⌘ + R` to reload
+ - You may need to also reload the inspected page
 
- - Message timestamps, toggle relative / absolute
- - Control bar up top
- - Clear button
- - Clear on reload
- - Resizable panels
- - Better formatting for object output in generated unit tests
- - Better unit test UI
- - Toggle next state / prev state / diff view
- - Make unit test view slide down from the top
- - Export
- - Time travel
- - Import
- - Remote pairing
+## Roadmap
+
+ - [x] Control bar
+ - [x] Clear button
+ - [x] Make unit test view slide down from the top
+ - [x] Time travel
+ - [x] Export
+ - [x] Diff view
+ - [x] Toggle next state / prev state / diff view
+ - [x] Message timestamps, toggle relative / absolute
+ - [x] Clear on reload / preserve log button
+ - [ ] Replay last / replay selected
+ - [ ] Import / replay log
+ - [ ] Compare runs
+ - [ ] Tab isolation
+ - [ ] Preserve state across reloads
+ - [ ] Do a better job surfacing errors
+ - [ ] Better formatting for object output in generated unit tests
+ - [ ] Resizable panels
+ - [ ] Remote pairing
+ - [ ] Command-line interface
