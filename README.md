@@ -18,6 +18,7 @@
  - Control bar up top
  - Clear button
  - Clear on reload
+ - Do a better job surfacing errors
  - Resizable panels
  - Better formatting for object output in generated unit tests
  - Better unit test UI

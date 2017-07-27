@@ -16,7 +16,7 @@ const formatMessage = (msg) => {
 const renderMessage = (msg) => {
   var items = [
     div({ className: 'panel-heading panel-label' }, 'Message'),
-    div({}, e(ObjectInspector, { data: formatMessage(msg.message[1]), expandLevel: 1 }))
+    div({}, e(ObjectInspector, { data: formatMessage(msg.data), expandLevel: 1 }))
   ];
 
   if (msg.commands && msg.commands.length) {
@@ -37,14 +37,14 @@ const renderMessage = (msg) => {
 
 const generateUnitTest = (msg) => {
   var prevState = JSON.stringify(msg.prev);
-  var msgData = Object.keys(msg.message[1]).length ? JSON.stringify(msg.message[1]) : '';
+  var msgData = Object.keys(msg.data).length ? JSON.stringify(msg.data) : '';
   var newState = JSON.stringify(msg.next);
   var hasCommands = msg.commands && msg.commands.length;
   var runPrefix = hasCommands ? `const commands = ` : '';
 
-  var lines = [`it('should respond to ${msg.message[0]} messages', () => {`];
+  var lines = [`it('should respond to ${msg.message} messages', () => {`];
   lines.push(`  container.push(${prevState});`);
-  lines.push(`  ${runPrefix}container.dispatch(new ${msg.message[0]}(${msgData}));`);
+  lines.push(`  ${runPrefix}container.dispatch(new ${msg.message}(${msgData}));`);
   lines.push('');
   lines.push(`  expect(container.state()).to.deep.equal(\n    ${newState}\n  );`);
 
@@ -81,7 +81,7 @@ class App extends React.Component {
             className: 'panel-item' + (msg === selected ? ' selected' : ''),
             onClick: () => this.setState({ selected: msg })
           },
-          msg.message[0]))
+          msg.message))
         )
       ),
 
