@@ -1,0 +1,93 @@
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#app, .container {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.loading {
+  padding: 10px;
+}
+
+.panel {
+  align-items: stretch;
+  overflow-y: auto;
+}
+.panel.control-deck {
+  background: rgb(243, 243, 243);
+  min-width: 225px;
+}
+.panel.left {
+  border-right: 1px solid rgb(163, 163, 163);
+}
+.panel.content {
+  padding: 10px 15px;
+  width: 100%;
+}
+.panel.content.with-heading {
+  padding-top: 0;
+}
+
+.panel-list {
+}
+
+.panel-heading {
+  border-top: 1px solid rgb(224, 224, 224);
+  padding: 7px 0 3px 0;
+}
+.panel-heading:not(:first-child) {
+  margin-top: 5px;
+}
+.panel-label {
+  color: rgb(97, 97, 97);
+  font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.panel-item {
+  padding: 10px 15px;
+  cursor: default;
+}
+.panel-item.selected {
+  color: white;
+  background: rgb(56, 121, 217);
+}
+
+.unit-test-button {
+  cursor: default;
+  color: rgb(100, 215, 100);
+  display: block;
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  height: 13px;
+  width: 13px;
+  border-radius: 19px;
+  font-size: 15px;
+  border: 3px solid rgb(100, 215, 100);
+  padding: 2px;
+  background: white;
+  line-height: 15px;
+}
+
+.unit-test-content {
+  position: absolute;
+  right: 10px;
+  top: 48px;
+  height: 140px;
+  width: 34%;
+  white-space: pre;
+  overflow-x: scroll;
+  overflow-y: auto;
+  padding: 15px;
+  font-family: Monaco;
+  background: rgb(220, 220, 220);
+  border-radius: 10px;
+}

@@ -11975,7 +11975,10 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react___default.a.Component {
           messages.map((msg, i) => div({
             key: i,
             className: 'panel-item' + (msg === selected ? ' selected' : ''),
-            onClick: () => this.setState({ selected: msg })
+            onClick: () => {
+              this.setState({ selected: msg });
+              // window.messageClient({ selected: msg });
+            }
           },
           msg.message))
         )

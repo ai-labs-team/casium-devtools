@@ -29,7 +29,14 @@
     }
   });
 
-  // backgroundPageConnection.postMessage({ message: "test message from devtools to background" });
+  // window.messageClient = (data) => {
+  //   backgroundPageConnection.postMessage(Object.assign({
+  //     from: "ArchDevToolsPanel",
+  //     tabId: chrome.devtools.inspectedWindow.tabId,
+  //   }, data));
+  // }
+
+  // window.messageClient({ state: "initialized" });
 
   const s = (json) => {
     try { return JSON.stringify(json); } catch (e) { return "{data}"; }
@@ -51,10 +58,3 @@
   // });
 
 }());
-
-// This sends an object to the background page 
-// where it can be relayed to the inspected page
-function sendObjectToInspectedPage(message) {
-  message.tabId = chrome.devtools.inspectedWindow.tabId;
-  chrome.extension.sendMessage(message);
-}
