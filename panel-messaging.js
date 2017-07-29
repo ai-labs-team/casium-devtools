@@ -29,14 +29,14 @@
     }
   });
 
-  // window.messageClient = (data) => {
-  //   backgroundPageConnection.postMessage(Object.assign({
-  //     from: "ArchDevToolsPanel",
-  //     tabId: chrome.devtools.inspectedWindow.tabId,
-  //   }, data));
-  // }
+  window.messageClient = (data) => {
+    backgroundPageConnection.postMessage(Object.assign({
+      from: "ArchDevToolsPanel",
+      tabId: chrome.devtools.inspectedWindow.tabId,
+    }, data));
+  }
 
-  // window.messageClient({ state: "initialized" });
+  window.messageClient({ state: "initialized" });
 
   const s = (json) => {
     try { return JSON.stringify(json); } catch (e) { return "{data}"; }

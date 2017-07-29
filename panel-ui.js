@@ -81,7 +81,7 @@ class App extends React.Component {
             className: 'panel-item' + (msg === selected ? ' selected' : ''),
             onClick: () => {
               this.setState({ selected: msg });
-              // window.messageClient({ selected: msg });
+              window.messageClient({ selected: msg });
             }
           },
           msg.message))

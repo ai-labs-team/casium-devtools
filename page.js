@@ -5,7 +5,8 @@
 
   // Get messages from background script
   port.onMessage.addListener(function(msg, sender) {
-    console.log("message to page script from " + sender.name, msg);
+    // console.log("message to page script from " + sender.name, msg);
+    window.postMessage(msg, "*");
   });
 
   window.postMessage({
@@ -14,16 +15,13 @@
   }, "*");
 
   window.addEventListener("message", function (message) {
-
     if (!message || !message.data || !message.data.id || message.data.from === "ArchDevToolsPageScript") {
-      console.log('PAGE MESSAGE??', message.data);
       return;
     }
     if (seen.includes(message.data.id)) return;
     seen.push(message.data.id);
 
     if (message.data.from !== "Arch") {
-      console.log('PAGE MESSAGE???', message.data);
       return;
     }
 

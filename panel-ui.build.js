@@ -11977,7 +11977,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react___default.a.Component {
             className: 'panel-item' + (msg === selected ? ' selected' : ''),
             onClick: () => {
               this.setState({ selected: msg });
-              // window.messageClient({ selected: msg });
+              window.messageClient({ selected: msg });
             }
           },
           msg.message))
