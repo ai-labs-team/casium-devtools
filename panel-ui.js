@@ -1,3 +1,4 @@
+import { lensPath, set } from 'ramda';
 import ReactDOM from 'react-dom';
 import React, { Component } from 'react';
 import { ObjectInspector } from 'react-inspector';
@@ -13,15 +14,15 @@ const formatMessage = (msg) => {
   return copy;
 };
 
-const renderMessage = (msg) => {
+const renderMessage = ({ data, commands, prev, next, path }) => {
   var items = [
     div({ className: 'panel-heading panel-label' }, 'Message'),
-    div({}, e(ObjectInspector, { data: formatMessage(msg.data), expandLevel: 1 }))
+    div({}, e(ObjectInspector, { data: formatMessage(data), expandLevel: 1 }))
   ];
 
-  if (msg.commands && msg.commands.length) {
+  if (commands && commands.length) {
     items.push(div({ className: 'panel-heading panel-label' }, 'Commands'));
-    msg.commands.forEach(cmd => {
+    commands.forEach(cmd => {
       items.push(div({ className: 'panel-label' }, cmd[0]));
       items.push(div({}, e(ObjectInspector, { data: cmd[1], expandLevel: 1 })))
     });
@@ -29,9 +30,9 @@ const renderMessage = (msg) => {
 
   return items.concat([
     div({ className: 'panel-heading panel-label' }, 'State'),
-    div({}, e(ObjectInspector, { data: msg.next, expandLevel: 1 })),
+    div({}, e(ObjectInspector, { data: set(lensPath(path), next, prev), expandLevel: 1 })),
     div({ className: 'panel-heading panel-label' }, 'Previous State'),
-    div({}, e(ObjectInspector, { data: msg.prev, expandLevel: 1 })),
+    div({}, e(ObjectInspector, { data: prev, expandLevel: 1 })),
   ]);
 }
 
@@ -59,7 +60,7 @@ const generateUnitTest = (msg) => {
   return lines.join('\n');
 }
 
-class App extends React.Component {
+class App extends Component {
 
   constructor(props) {
     super(props);
