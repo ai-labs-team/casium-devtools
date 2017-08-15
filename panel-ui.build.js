@@ -16283,7 +16283,7 @@ const renderMessage = ({ data, commands, prev, next, path }) => {
 
   return items.concat([
     div({ className: 'panel-heading panel-label' }, 'State'),
-    div({}, e(__WEBPACK_IMPORTED_MODULE_3_react_inspector__["ObjectInspector"], { data: __WEBPACK_IMPORTED_MODULE_0_ramda__["set"](__WEBPACK_IMPORTED_MODULE_0_ramda__["lensPath"](path), next, prev), expandLevel: 1 })),
+    div({}, e(__WEBPACK_IMPORTED_MODULE_3_react_inspector__["ObjectInspector"], { data: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["set"])(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["lensPath"])(path), next, prev), expandLevel: 1 })),
     div({ className: 'panel-heading panel-label' }, 'Previous State'),
     div({}, e(__WEBPACK_IMPORTED_MODULE_3_react_inspector__["ObjectInspector"], { data: prev, expandLevel: 1 })),
   ]);
@@ -16328,7 +16328,14 @@ class App extends __WEBPACK_IMPORTED_MODULE_2_react__["Component"] {
     var { messages, selected, showUnitTest } = this.state;
 
     return div({ className: 'container' }, [
-      div({ className: 'panel left control-deck'}, 
+      div({ className: 'panel left control-deck'}, [
+        div({
+          className: 'panel-heading clear-messages-button',
+          onClick: () => {
+            this.setState({ messages: [] });
+            window.MESSAGES = [];
+          }
+        }, 'Clear Messages'),
         div({ className: 'panel-list' },
           messages.map((msg, i) => div({
             key: i,
@@ -16339,7 +16346,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_2_react__["Component"] {
             }
           },
           msg.message))
-        )
+        )]
       ),
 
       div({ className: 'panel content with-heading' }, !selected && [] || renderMessage(selected).concat(
