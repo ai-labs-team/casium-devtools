@@ -35,6 +35,7 @@ html, body {
 }
 
 .panel-list {
+  margin-top: 25px;
 }
 
 .panel-heading {
@@ -58,6 +59,21 @@ html, body {
 .panel-item.selected {
   color: white;
   background: rgb(56, 121, 217);
+}
+
+.clear-messages-button {
+  align-items: left;
+  background: rgb(243, 243, 243);
+  border-bottom: 1px solid lightgray;
+  cursor: pointer;
+  height: 20px;
+  padding: 5px 10px 0 10px;
+  position: absolute;
+  width: 205px;
+}
+
+.clear-messages-button:hover {
+  background: lightgray;
 }
 
 .unit-test-button {

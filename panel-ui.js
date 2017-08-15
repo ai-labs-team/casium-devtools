@@ -75,7 +75,14 @@ class App extends Component {
     var { messages, selected, showUnitTest } = this.state;
 
     return div({ className: 'container' }, [
-      div({ className: 'panel left control-deck'}, 
+      div({ className: 'panel left control-deck'}, [
+        div({
+          className: 'panel-heading clear-messages-button',
+          onClick: () => {
+            this.setState({ messages: [] });
+            window.MESSAGES = [];
+          }
+        }, 'Clear Messages'),
         div({ className: 'panel-list' },
           messages.map((msg, i) => div({
             key: i,
@@ -86,7 +93,7 @@ class App extends Component {
             }
           },
           msg.message))
-        )
+        )]
       ),
 
       div({ className: 'panel content with-heading' }, !selected && [] || renderMessage(selected).concat(
