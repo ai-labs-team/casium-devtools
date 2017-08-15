@@ -5,10 +5,14 @@ html, body {
   padding: 0;
 }
 
-#app, .container {
+#app, .container, .panel-container {
   height: 100%;
   width: 100%;
+}
+
+.panel-container {
   display: flex;
+  height: calc(100% - 22px);
 }
 
 .loading {
@@ -35,15 +39,17 @@ html, body {
 }
 
 .panel-list {
-  margin-top: 25px;
 }
 
 .panel-heading {
   border-top: 1px solid rgb(224, 224, 224);
   padding: 7px 0 3px 0;
-}
-.panel-heading:not(:first-child) {
   margin-top: 5px;
+}
+.panel-heading.first {
+  position: relative;
+  top: 0px;
+  margin-top: 0;
 }
 .panel-label {
   color: rgb(97, 97, 97);
@@ -61,49 +67,43 @@ html, body {
   background: rgb(56, 121, 217);
 }
 
-.clear-messages-button {
-  align-items: left;
-  background: rgb(243, 243, 243);
+.panel-tools {
   border-bottom: 1px solid lightgray;
-  cursor: pointer;
   height: 20px;
-  padding: 5px 10px 0 10px;
-  position: absolute;
-  width: 205px;
 }
 
-.clear-messages-button:hover {
+.tool-button {
+  display: block;
+  float: left;
+  background: rgb(243, 243, 243);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.tool-button:hover {
   background: lightgray;
 }
 
-.unit-test-button {
-  cursor: default;
-  color: rgb(100, 215, 100);
-  display: block;
-  position: absolute;
-  right: 15px;
-  top: 15px;
-  height: 13px;
-  width: 13px;
-  border-radius: 19px;
-  font-size: 15px;
-  border: 3px solid rgb(100, 215, 100);
-  padding: 2px;
-  background: white;
-  line-height: 15px;
+.tool-button.on {
+  color: rgb(54, 117, 217);
 }
 
 .unit-test-content {
-  position: absolute;
-  right: 10px;
-  top: 48px;
-  height: 140px;
-  width: 34%;
-  white-space: pre;
-  overflow-x: scroll;
-  overflow-y: auto;
+  position: relative;
+  height: 160px;
+  top: -190px;
+  margin-bottom: -190px;
   padding: 15px;
+  white-space: pre;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-family: Monaco;
-  background: rgb(220, 220, 220);
-  border-radius: 10px;
+  transition: all 0.3s ease;
+  background: rgb(230, 230, 230);
+}
+
+.unit-test-content.on {
+  top: 0;
+  margin-bottom: 0;
+  transition: all 0.3s ease;
 }

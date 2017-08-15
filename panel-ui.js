@@ -1,6 +1,7 @@
-import { lensPath, set } from 'ramda';
+import { lensPath, set, identity } from 'ramda';
 import ReactDOM from 'react-dom';
 import React, { Component } from 'react';
+import FontAwesome from 'react-fontawesome';
 import { ObjectInspector } from 'react-inspector';
 
 const e = (el, props, children = []) => React.createElement(el, props, children);
@@ -16,13 +17,13 @@ const formatMessage = (msg) => {
 
 const renderMessage = ({ data, commands, prev, next, path }) => {
   var items = [
-    div({ className: 'panel-heading panel-label' }, 'Message'),
+    div({ className: 'panel-heading first panel-label' }, 'Message'),
     div({}, e(ObjectInspector, { data: formatMessage(data), expandLevel: 1 }))
   ];
 
-  if (commands && commands.length) {
+  if (commands && commands.length && commands.filter(identity).length) {
     items.push(div({ className: 'panel-heading panel-label' }, 'Commands'));
-    commands.forEach(cmd => {
+    commands.filter(identity).forEach(cmd => {
       items.push(div({ className: 'panel-label' }, cmd[0]));
       items.push(div({}, e(ObjectInspector, { data: cmd[1], expandLevel: 1 })))
     });
@@ -64,7 +65,7 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { messages: [], selected: null, showUnitTest: false };
+    this.state = { messages: [], selected: null, showUnitTest: false, timeTravelActive: false };
   }
 
   componentWillMount() {
@@ -72,37 +73,50 @@ class App extends Component {
   }
 
   render() {
-    var { messages, selected, showUnitTest } = this.state;
+    var { messages, selected, showUnitTest, timeTravelActive } = this.state;
 
     return div({ className: 'container' }, [
-      div({ className: 'panel left control-deck'}, [
-        div({
-          className: 'panel-heading clear-messages-button',
-          onClick: () => {
-            this.setState({ messages: [] });
-            window.MESSAGES = [];
-          }
-        }, 'Clear Messages'),
-        div({ className: 'panel-list' },
-          messages.map((msg, i) => div({
-            key: i,
-            className: 'panel-item' + (msg === selected ? ' selected' : ''),
-            onClick: () => {
-              this.setState({ selected: msg });
-              window.messageClient({ selected: msg });
-            }
-          },
-          msg.message))
-        )]
-      ),
-
-      div({ className: 'panel content with-heading' }, !selected && [] || renderMessage(selected).concat(
-        div({
-          title: 'Show unit test',
-          className: 'unit-test-button',
+      div({ className: 'panel-tools' }, [
+        e(FontAwesome, {
+          name: 'ban',
+          title: 'Clear Messages',
+          className: 'tool-button clear-messages-button',
+          onClick: () => this.setState({ messages: (window.MESSAGES = []) })
+        }),
+        e(FontAwesome, {
+          name: 'clock-o',
+          title: 'Toggle Time Travel',
+          className: 'tool-button time-travel-button' + (timeTravelActive ? ' on' : ''),
+          onClick: () => this.setState({ timeTravelActive: !timeTravelActive })
+        }),
+        e(FontAwesome, {
+          name: 'check-circle-o',
+          title: 'Toggle Unit Test',
+          className: 'tool-button unit-test-button' + (showUnitTest ? ' on' : ''),
           onClick: () => this.setState({ showUnitTest: !showUnitTest })
-        }, '✔')
-      ).concat(!showUnitTest && [] || div({ className: 'unit-test-content' }, generateUnitTest(selected))))
+        }),
+      ]),
+
+      div({ className: 'panel-container'}, [
+        div({ className: 'panel left control-deck'}, [
+          div({ className: 'panel-list' },
+            messages.map((msg, i) => div({
+              key: i,
+              className: 'panel-item' + (msg === selected ? ' selected' : ''),
+              onClick: () => {
+                this.setState({ selected: msg });
+                timeTravelActive && window.messageClient({ selected: msg });
+              }
+            },
+            msg.message))
+          )]
+        ),
+
+        div({ className: 'panel content with-heading' }, !selected && [] || [
+          div({ className: 'unit-test-content' + (showUnitTest ? ' on' : '') }, generateUnitTest(selected)),
+          ...renderMessage(selected)
+        ])
+      ])
     ]);
   }
 }
