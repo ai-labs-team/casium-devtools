@@ -16293,6 +16293,10 @@ const renderMessage = ({ data, commands, prev, next, path }) => {
 }
 
 const generateUnitTest = (msg) => {
+  if (!msg.data) {
+    return null;
+  }
+
   var prevState = JSON.stringify(msg.prev);
   var msgData = Object.keys(msg.data).length ? JSON.stringify(msg.data) : '';
   var newState = JSON.stringify(msg.next);
@@ -16359,7 +16363,10 @@ class App extends __WEBPACK_IMPORTED_MODULE_2_react__["Component"] {
               key: i,
               className: 'panel-item' + (msg === selected ? ' selected' : ''),
               onClick: () => {
-                this.setState({ selected: msg });
+                this.setState({
+                  selected: msg,
+                  showUnitTest: !msg.data ? false : showUnitTest
+                });
                 timeTravelActive && window.messageClient({ selected: msg });
               }
             },
