@@ -14,5 +14,8 @@
     "react-dom": "^15.6.1",
     "react-fontawesome": "^1.6.1",
     "react-inspector": "^2.0.0"
+  },
+  "devDependencies": {
+    "webpack": "^3.5.5"
   }
 }
