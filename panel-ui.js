@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom';
 import { diff } from 'json-diff';
 import FontAwesome from 'react-fontawesome';
 import { ObjectInspector } from 'react-inspector';
+import { generateUnitTest } from './test-generator';
 import { toPath, download, disableEvent, handleDrop } from './util';
 import { e, div, span, button, nodeRenderer, diffNodeMapper, formatDate, timeSince } from './view';
 
@@ -58,35 +59,6 @@ const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, ac
     div({ className: 'panel-heading panel-label', key: 'relay' }, 'Relay'),
     div({}, e(ObjectInspector, { data: relay, expandLevel: 2 })),
   ]);
-}
-
-const generateUnitTest = (msg) => {
-  if (!msg.data) {
-    return null;
-  }
-  const toJsVal = pipe(JSON.stringify, replace(/ "([^"]+)": /g, ' $1: '));
-
-  var prevState = toJsVal(msg.prev);
-  var msgData = keys(msg.data).length ? toJsVal(msg.data) : '';
-  var newState = toJsVal(msg.next);
-  var hasCommands = msg.commands && msg.commands.length;
-  var runPrefix = hasCommands ? `const commands = ` : '';
-
-  var lines = [`it('should respond to ${msg.message} messages', () => {`];
-  lines.push(`  container.push(${prevState});`);
-  lines.push(`  ${runPrefix}container.dispatch(new ${msg.message}(${msgData}));`);
-  lines.push('');
-  lines.push(`  expect(container.state()).to.deep.equal(\n    ${newState}\n  );`);
-
-  if (hasCommands) {
-    lines.push(`  expect(commands).to.deep.equal([`);
-    lines = lines.concat(msg.commands.map(([name, data]) => `    new ${name}(${toJsVal(data)}),`));
-    lines.push(`  ]);`);
-  }
-
-  lines.push('})');
-
-  return lines.join('\n');
 }
 
 class App extends Component {
