@@ -13,6 +13,7 @@
  - Follow installation instructions
  - `yarn`
  - `yarn build`, or `yarn watch`, to auto-reload on saved changes
+ - `cd node_modules/react-inspector; yarn; yarn build; cd ../..`
  - Open DevTools in separate window, navigate to `Architecture` tab
  - `⌘ + Opt + I` to initiate DevTools-ception
  - With Meta-DevTools window selected, `⌘ + R` to reload
@@ -38,4 +39,5 @@
  - [ ] Better formatting for object output in generated unit tests
  - [ ] Resizable panels
  - [ ] Remote pairing
+ - [ ] Remote control
  - [ ] Command-line interface
