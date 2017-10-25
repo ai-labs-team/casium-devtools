@@ -1617,9 +1617,9 @@ react-fontawesome@^1.6.1:
   dependencies:
     prop-types "^15.5.6"
 
-"react-inspector@https://github.com/nateabele/react-inspector":
+"react-inspector@https://github.com/nateabele/react-inspector#master":
   version "2.1.4"
-  resolved "https://github.com/nateabele/react-inspector#390b9ee954089fc0f18b322c009862cd1bac069a"
+  resolved "https://github.com/nateabele/react-inspector#403194ddf865516f1fee8379ddb1051cc3b26c64"
   dependencies:
     babel-runtime "^6.23.0"
     is-dom "^1.0.9"

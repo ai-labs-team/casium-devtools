@@ -16,7 +16,7 @@
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-fontawesome": "^1.6.1",
-    "react-inspector": "https://github.com/nateabele/react-inspector"
+    "react-inspector": "https://github.com/nateabele/react-inspector#master"
   },
   "devDependencies": {
     "webpack": "^3.5.5"
