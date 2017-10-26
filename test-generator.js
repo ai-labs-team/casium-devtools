@@ -1,4 +1,4 @@
-import { keys, lensPath, view, set, traverse } from 'ramda';
+import { keys, lensPath, view, set, traverse, merge, is, zipObj, map, pipe, values, filter, replace } from 'ramda';
 import hjson from 'hjson';
 import { diff } from 'json-diff';
 import { isModifiedObject, isModifiedArray } from './util';
@@ -13,8 +13,32 @@ const formatOpts = {
   bracesSameLine: true
 };
 
-export const generateUnitTest = (msg) => {
-  if (!msg.data) {
+const leftHandDiff = (val) => {
+
+  if (isModifiedObject(val)) {
+    return val.__old;
+  }
+
+  if (isModifiedArray(val)) {
+    return val.filter(v => v.startsWith('~') || v.startsWith('-')).map(v => v.substring(1));
+  }
+
+  if (is(Object, val)) {
+    const nonAddedKeys = filter(s => !s.endsWith('__added'), keys(val));
+    const deepDive = pipe(map(k => val[k]), map(leftHandDiff));
+    const newKeys = map(replace(/__deleted$/, ''), nonAddedKeys);
+    return zipObj(newKeys, deepDive(nonAddedKeys));
+  }
+
+  if (is(Array, val)) {
+    return map(leftHandDiff, val);
+  }
+
+  return val;
+}
+
+export const generateUnitTest = ({ data, commands, prev, path, next, relay, message, name }) => {
+  if (!data) {
     return null;
   }
   const toJsVal = (val, indent = 2) => hjson.stringify(val, formatOpts)
@@ -22,26 +46,25 @@ export const generateUnitTest = (msg) => {
     .map((str, i) => i === 0 ? str : '  ' + str)
     .join('\n');
 
-  const delegateLens = lensPath(msg.path);
-  var prevState = toJsVal(view(delegateLens, msg.prev));
-  var msgData = keys(msg.data).length ? toJsVal(msg.data) : '';
-  var newState = toJsVal(msg.next);
-  var relay = toJsVal(msg.relay);
-  var hasCommands = msg.commands && msg.commands.length;
-  var runPrefix = hasCommands ? `const commands = ` : '';
+  const hasCommands = commands && commands.length;
+  const delegateLens = lensPath(path);
+  const unformattedPrev = hasCommands ? view(delegateLens, prev) : leftHandDiff(diff(view(delegateLens, prev), next));
+  const prevState = toJsVal(unformattedPrev);
+  const msgData = keys(data).length ? toJsVal(data) : '';
+  const newState = toJsVal(next);
+  const formattedRelay = toJsVal(relay);
+  const runPrefix = hasCommands ? `const commands = ` : '';
 
-  console.log(traverse(diff(view(delegateLens, msg.prev), msg.next)));
-
-  var lines = [`it('should respond to ${msg.message} messages', () => {`];
-  lines.push(`  isolate(${msg.name}, { relay : ${relay} })`);
-  lines.push(`  container.push(${hasCommands ? prevState : prevState});`);
-  lines.push(`  ${runPrefix}container.dispatch(new ${msg.message}(${msgData}));`);
+  let lines = [`it('should respond to ${message} messages', () => {`];
+  lines.push(`  const container = isolate(${name}, { relay : ${formattedRelay} })`);
+  lines.push(`  container.push(${prevState});`);
+  lines.push(`  ${runPrefix}container.dispatch(new ${message}(${msgData}));`);
   lines.push('');
   lines.push(`  expect(container.state()).to.deep.equal(${newState});`);
 
   if (hasCommands) {
     lines.push(`  expect(commands).to.deep.equal([`);
-    lines = lines.concat(msg.commands.map(([name, data]) => `    new ${name}(${toJsVal(data)}),`));
+    lines = lines.concat(commands.map(([name, data]) => `    new ${name}(${toJsVal(data)}),`));
     lines.push(`  ]);`);
   }
 
