@@ -43,7 +43,7 @@ export const generateUnitTest = ({ data, commands, prev, path, next, relay, mess
   }
   const toJsVal = (val, indent = 2) => hjson.stringify(val, formatOpts)
     .split('\n')
-    .map((str, i) => i === 0 ? str : '  ' + str)
+    .map((str, i) => i === 0 ? str : (' ').repeat(indent) + str)
     .join('\n');
 
   const hasCommands = commands && commands.length;
