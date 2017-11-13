@@ -1,4 +1,7 @@
-import { keys, lensPath, view, set, traverse, merge, is, zipObj, map, pipe, values, filter, replace } from 'ramda';
+import {
+  either, keys, lensPath, view, set, traverse, merge, is, zipObj,
+  map, pipe, values, filter, replace, slice, startsWith
+} from 'ramda';
 import hjson from 'hjson';
 import { diff } from 'json-diff';
 import { isModifiedObject, isModifiedArray } from './util';
@@ -20,7 +23,7 @@ const leftHandDiff = (val) => {
   }
 
   if (isModifiedArray(val)) {
-    return val.filter(v => v.startsWith('~') || v.startsWith('-')).map(v => v.substring(1));
+    return val.filter(either(startsWith('~'), startsWith('-'))).map(slice(1, Infinity));
   }
 
   if (is(Object, val)) {
