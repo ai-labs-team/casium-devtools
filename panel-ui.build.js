@@ -49069,7 +49069,7 @@ const leftHandDiff = (val) => {
   }
 
   if (Object(__WEBPACK_IMPORTED_MODULE_3__util__["b" /* isModifiedArray */])(val)) {
-    return val.filter(v => v.startsWith('~') || v.startsWith('-')).map(v => v.substring(1));
+    return val.filter(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["anyPass"])([Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["startsWith"])('~'), Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["startsWith"])('+'), Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["startsWith"])('-')])).map(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["slice"])(1, Infinity));
   }
 
   if (Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["is"])(Object, val)) {
