@@ -1,4 +1,4 @@
-# Axiom Architecture DevTools
+# Dev Tools for Casium – An application architecture for React
 
 ## Installation
 
