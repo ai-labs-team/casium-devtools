@@ -1,7 +1,7 @@
 {
-  "name": "Architecture DevTools",
+  "name": "Casium DevTools",
   "version": "0.1",
-  "description": "DevTools extension for debugging Architecture state and messages",
+  "description": "DevTools extension for debugging Casium state and messages",
   "devtools_page": "devtools.html",
   "background": {
     "scripts": [
