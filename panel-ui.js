@@ -90,11 +90,15 @@ class App extends Component {
     ]);
 
     window.LISTENERS.push([
+      where({ from: equals('ArchDevToolsPanel'), state: isNil }),
+      message => this.state.haltForReplay && this.setState({ haltForReplay: false }),
+    ]);
+
+    window.LISTENERS.push([
       where({ from: equals('ArchDevToolsPageScript'), state: equals('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
-      () => window.messageClient({ selected: this.state.selected }),
-      () => this.setState({ haltForReplay: false }),
+      () => this.state.active.replay && window.messageClient({ selected: this.state.selected }),
     ]);
 
     window.FLUSH_QUEUE();

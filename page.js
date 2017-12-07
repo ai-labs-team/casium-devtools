@@ -16,6 +16,7 @@
   }, "*");
 
   window.addEventListener('message', function (message) {
+    console.log(message);
     if (!message || !message.data || !message.data.id || message.data.from === 'ArchDevToolsPageScript') {
       return;
     }
@@ -37,7 +38,5 @@
       ].join(' '));
     }
   }, false);
-
-  window.messageClient({ state: 'refresh' });
 
 })();
