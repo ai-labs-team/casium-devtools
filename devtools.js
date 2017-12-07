@@ -23,14 +23,10 @@ function createPanelIfCasiumLoaded() {
     });
 }
 
-chrome.devtools.network.onNavigated.addListener(function () {
-  createPanelIfCasiumLoaded();
-});
+chrome.devtools.network.onNavigated.addListener(createPanelIfCasiumLoaded);
 
 // Check to see if Casium has loaded once per second in case React is added
 // after page load
-var loadCheckInterval = setInterval(function () {
-  createPanelIfCasiumLoaded();
-}, 1000);
+var loadCheckInterval = setInterval(createPanelIfCasiumLoaded, 1000);
 
 createPanelIfCasiumLoaded();
