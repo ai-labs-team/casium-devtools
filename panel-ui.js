@@ -98,7 +98,7 @@ class App extends Component {
       where({ from: equals('ArchDevToolsPageScript'), state: equals('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
-      () => this.state.active.replay && window.messageClient({ selected: this.state.selected }),
+      () => this.state.active.replay && setTimeout(window.messageClient({ selected: this.state.selected }), 1500),
     ]);
 
     window.FLUSH_QUEUE();
