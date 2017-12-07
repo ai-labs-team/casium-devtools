@@ -1,7 +1,7 @@
 // Executes on client page load
 (() => {
 
-  var port = chrome.extension.connect({ name: 'CasiumDevToolsPageScript' });
+  var port = chrome.extension.connect({ name: 'ArchDevToolsPageScript' });
   var seen = [];
 
   // Get messages from background script
@@ -11,15 +11,14 @@
   });
 
   port.postMessage({
-    from: 'CasiumDevToolsPageScript',
+    from: 'ArchDevToolsPageScript',
     state: 'initialized'
   }, "*");
 
   window.addEventListener('message', function (message) {
-    if (!message || !message.data || !message.data.id || message.data.from === 'CasiumDevToolsPageScript') {
+    if (!message || !message.data || !message.data.id || message.data.from === 'ArchDevToolsPageScript') {
       return;
     }
-    console.log(message);
     if (seen.includes(message.data.id)) return;
     seen.push(message.data.id);
 

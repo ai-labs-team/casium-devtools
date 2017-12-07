@@ -27,7 +27,7 @@
 
   const processMsg = msg => ([predicate, ...listeners]) => predicate(msg) && listeners.map(l => l(msg));
 
-  var backgroundPageConnection = chrome.runtime.connect({ name: 'CasiumDevToolsPanel' });
+  var backgroundPageConnection = chrome.runtime.connect({ name: 'ArchDevToolsPanel' });
 
   backgroundPageConnection.onMessage.addListener(message => {
     window.LISTENERS.length ? window.LISTENERS.forEach(processMsg(message)) : queue.push(message);
@@ -35,7 +35,7 @@
 
   window.messageClient = (data) => {
     backgroundPageConnection.postMessage(Object.assign({
-      from: "CasiumDevToolsPanel",
+      from: "ArchDevToolsPanel",
       tabId: chrome.devtools.inspectedWindow.tabId,
     }, data));
   }
