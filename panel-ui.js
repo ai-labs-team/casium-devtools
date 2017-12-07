@@ -78,19 +78,27 @@ class App extends Component {
         prevState: false,
         relativeTime: false,
         replay: false
-      }
+      },
+      haltForReplay: false,
     };
   }
 
   componentWillMount() {
     window.LISTENERS.push([
       where({ from: equals('Arch'), state: isNil }),
-      message => this.setState({ messages: this.state.messages.concat(message) })
+      message => !this.state.haltForReplay && this.setState({ messages: this.state.messages.concat(message)}),
+    ]);
+
+    window.LISTENERS.push([
+      where({ from: equals('ArchDevToolsPanel'), state: isNil }),
+      message => this.state.haltForReplay && this.setState({ haltForReplay: false }),
     ]);
 
     window.LISTENERS.push([
       where({ from: equals('ArchDevToolsPageScript'), state: equals('initialized') }),
-      () => this.state.active.clearOnReload && this.clearMessages()
+      () => this.state.active.replay && this.setState({ haltForReplay: true }),
+      () => this.state.active.clearOnReload && this.clearMessages(),
+      () => this.state.active.replay && window.messageClient({ selected: this.state.selected }),
     ]);
 
     window.FLUSH_QUEUE();
@@ -108,7 +116,8 @@ class App extends Component {
     this.setState({
       messages: (window.MESSAGES = []),
       selected: null,
-      active: merge(this.state.active, { timeTravel: false })
+      haltForReplay: false,
+      active: merge(this.state.active, { timeTravel: false, replay: false })
     });
   }
 
@@ -150,6 +159,15 @@ class App extends Component {
             onClick: () => {
               download({ data: JSON.stringify(this.state.messages, null, 2), filename: 'message-log.json' });
             }
+          }),
+          selected && e(FontAwesome, {
+            key: 'replay',
+            name: 'replay',
+            title: 'Replay Message on Reload',
+            className: 'tool-button fa fa-play-circle-o' + (active.replay ? ' on' : ''),
+            onClick: () => {
+              selected && this.toggleActive('replay');
+            }
           })
         ]),
 
@@ -159,22 +177,22 @@ class App extends Component {
               className: 'first' + (this.state.active.prevState ? ' selected' : ''),
               onClick: () => this.toggleActive('prevState')
             }, [
-              '{', e(FontAwesome, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
-            ]),
+                '{', e(FontAwesome, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
+              ]),
 
             button({
               className: (this.state.active.diffState ? ' selected' : ''),
               onClick: () => this.toggleActive('diffState')
             }, [
-              '{', span({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', span({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
-            ]),
+                '{', span({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', span({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
+              ]),
 
             button({
               className: 'last' + (this.state.active.nextState ? ' selected' : ''),
               onClick: () => this.toggleActive('nextState')
             }, [
-              '{', e(FontAwesome, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
-            ])
+                '{', e(FontAwesome, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
+              ])
           ])
         ])
       ]),
