@@ -19602,19 +19602,30 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
         prevState: false,
         relativeTime: false,
         replay: false
-      }
+      },
+      haltForReplay: false,
     };
   }
 
   componentWillMount() {
     window.LISTENERS.push([
       Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('Arch'), state: __WEBPACK_IMPORTED_MODULE_0_ramda__["isNil"] }),
-      message => this.setState({ messages: this.state.messages.concat(message) })
+      message => !this.state.haltForReplay && this.setState({ messages: this.state.messages.concat(message)}),
+    ]);
+
+    window.LISTENERS.push([
+      Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('Arch'), state: __WEBPACK_IMPORTED_MODULE_0_ramda__["isNil"] }),
+      () => this.state.active.replay && (window.messageClient({ selected: this.state.selected }) || this.setState({ haltForReplay: false })),
     ]);
 
     window.LISTENERS.push([
       Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('ArchDevToolsPageScript'), state: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('initialized') }),
-      () => this.state.active.clearOnReload && this.clearMessages()
+      () => this.state.active.clearOnReload && this.clearMessages(),
+    ]);
+
+    window.LISTENERS.push([
+      Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('ArchDevToolsPageScript'), state: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('initialized') }),
+      () => this.state.active.replay && this.setState({ haltForReplay: true }),
     ]);
 
     window.FLUSH_QUEUE();
@@ -19630,7 +19641,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
 
   clearMessages() {
     this.setState({
-      messages: (window.MESSAGES = []),
+      messages: [],
       selected: null,
       active: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(this.state.active, { timeTravel: false })
     });
@@ -19674,6 +19685,15 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
             onClick: () => {
               Object(__WEBPACK_IMPORTED_MODULE_7__util__["a" /* download */])({ data: JSON.stringify(this.state.messages, null, 2), filename: 'message-log.json' });
             }
+          }),
+          Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, {
+            key: 'replay',
+            name: 'replay',
+            title: 'Replay Message',
+            className: 'tool-button fa fa-play-circle-o' + (active.replay ? ' on' : ''),
+            onClick: () => {
+              selected && this.toggleActive('replay');
+            }
           })
         ]),
 
@@ -19683,22 +19703,22 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
               className: 'first' + (this.state.active.prevState ? ' selected' : ''),
               onClick: () => this.toggleActive('prevState')
             }, [
-              '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
-            ]),
+                '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
+              ]),
 
             Object(__WEBPACK_IMPORTED_MODULE_8__view__["a" /* button */])({
               className: (this.state.active.diffState ? ' selected' : ''),
               onClick: () => this.toggleActive('diffState')
             }, [
-              '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
-            ]),
+                '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
+              ]),
 
             Object(__WEBPACK_IMPORTED_MODULE_8__view__["a" /* button */])({
               className: 'last' + (this.state.active.nextState ? ' selected' : ''),
               onClick: () => this.toggleActive('nextState')
             }, [
-              '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
-            ])
+                '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
+              ])
           ])
         ])
       ]),
@@ -19706,16 +19726,17 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
       Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-container', key: 'panel' }, [
         Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel left control-deck', key: 'controls' }, [
           Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-list', key: 'message-list' },
-            messages.map(msg => Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({
-              key: msg.id,
-              className: 'panel-item' + (msg === selected ? ' selected' : ''),
-              onClick: () => {
-                this.setState({ selected: msg });
-                this.setActive('unitTest', !msg.data ? false : active.unitTest);
-                active.timeTravel && window.messageClient({ selected: msg });
-              }
-            },
-            msg.message))
+            messages.map(msg => {
+              return Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({
+                key: msg.id,
+                className: 'panel-item' + (msg === selected ? ' selected' : ''),
+                onClick: () => {
+                  this.setState({ selected: msg });
+                  this.setActive('unitTest', !msg.data ? false : active.unitTest);
+                  active.timeTravel && window.messageClient({ selected: msg });
+                }
+              }, msg.message);
+            })
           )]
         ),
 
