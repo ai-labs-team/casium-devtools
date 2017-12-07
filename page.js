@@ -16,7 +16,6 @@
   }, "*");
 
   window.addEventListener('message', function (message) {
-    console.log(message);
     if (!message || !message.data || !message.data.id || message.data.from === 'ArchDevToolsPageScript') {
       return;
     }
