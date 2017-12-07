@@ -116,7 +116,8 @@ class App extends Component {
     this.setState({
       messages: [],
       selected: null,
-      active: merge(this.state.active, { timeTravel: false, haltForReplay: false })
+      haltForReplay: false,
+      active: merge(this.state.active, { timeTravel: false, replay: false })
     });
   }
 

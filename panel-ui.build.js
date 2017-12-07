@@ -19640,7 +19640,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
     this.setState({
       messages: [],
       selected: null,
-      active: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(this.state.active, { timeTravel: false, haltForReplay: false })
+      haltForReplay: false,
+      active: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(this.state.active, { timeTravel: false, replay: false })
     });
   }
 
