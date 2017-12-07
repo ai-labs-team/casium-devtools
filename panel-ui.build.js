@@ -19686,7 +19686,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
               Object(__WEBPACK_IMPORTED_MODULE_7__util__["a" /* download */])({ data: JSON.stringify(this.state.messages, null, 2), filename: 'message-log.json' });
             }
           }),
-          Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, {
+          selected && Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, {
             key: 'replay',
             name: 'replay',
             title: 'Replay Message',

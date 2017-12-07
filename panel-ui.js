@@ -162,7 +162,7 @@ class App extends Component {
               download({ data: JSON.stringify(this.state.messages, null, 2), filename: 'message-log.json' });
             }
           }),
-          e(FontAwesome, {
+          selected && e(FontAwesome, {
             key: 'replay',
             name: 'replay',
             title: 'Replay Message',
