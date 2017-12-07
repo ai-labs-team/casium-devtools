@@ -19724,8 +19724,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
       Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-container', key: 'panel' }, [
         Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel left control-deck', key: 'controls' }, [
           Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-list', key: 'message-list' },
-            messages.map(msg => {
-              return Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({
+            messages.map(msg => Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({
                 key: msg.id,
                 className: 'panel-item' + (msg === selected ? ' selected' : ''),
                 onClick: () => {
@@ -19733,8 +19732,8 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
                   this.setActive('unitTest', !msg.data ? false : active.unitTest);
                   active.timeTravel && window.messageClient({ selected: msg });
                 }
-              }, msg.message);
-            })
+              }, msg.message)
+            )
           )]
         ),
 

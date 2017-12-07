@@ -200,8 +200,7 @@ class App extends Component {
       div({ className: 'panel-container', key: 'panel' }, [
         div({ className: 'panel left control-deck', key: 'controls' }, [
           div({ className: 'panel-list', key: 'message-list' },
-            messages.map(msg => {
-              return div({
+            messages.map(msg => div({
                 key: msg.id,
                 className: 'panel-item' + (msg === selected ? ' selected' : ''),
                 onClick: () => {
@@ -209,8 +208,8 @@ class App extends Component {
                   this.setActive('unitTest', !msg.data ? false : active.unitTest);
                   active.timeTravel && window.messageClient({ selected: msg });
                 }
-              }, msg.message);
-            })
+              }, msg.message)
+            )
           )]
         ),
 
