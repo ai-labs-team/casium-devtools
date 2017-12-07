@@ -19638,7 +19638,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
 
   clearMessages() {
     this.setState({
-      messages: [],
+      messages: (window.MESSAGES = []),
       selected: null,
       haltForReplay: false,
       active: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(this.state.active, { timeTravel: false, replay: false })

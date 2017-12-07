@@ -114,7 +114,7 @@ class App extends Component {
 
   clearMessages() {
     this.setState({
-      messages: [],
+      messages: (window.MESSAGES = []),
       selected: null,
       haltForReplay: false,
       active: merge(this.state.active, { timeTravel: false, replay: false })
