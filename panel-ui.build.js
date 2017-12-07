@@ -19725,15 +19725,15 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
         Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel left control-deck', key: 'controls' }, [
           Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-list', key: 'message-list' },
             messages.map(msg => Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({
-                key: msg.id,
-                className: 'panel-item' + (msg === selected ? ' selected' : ''),
-                onClick: () => {
-                  this.setState({ selected: msg });
-                  this.setActive('unitTest', !msg.data ? false : active.unitTest);
-                  active.timeTravel && window.messageClient({ selected: msg });
-                }
-              }, msg.message)
-            )
+              key: msg.id,
+              className: 'panel-item' + (msg === selected ? ' selected' : ''),
+              onClick: () => {
+                this.setState({ selected: msg });
+                this.setActive('unitTest', !msg.data ? false : active.unitTest);
+                active.timeTravel && window.messageClient({ selected: msg });
+              }
+            },
+            msg.message))
           )]
         ),
 

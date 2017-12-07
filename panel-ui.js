@@ -201,15 +201,15 @@ class App extends Component {
         div({ className: 'panel left control-deck', key: 'controls' }, [
           div({ className: 'panel-list', key: 'message-list' },
             messages.map(msg => div({
-                key: msg.id,
-                className: 'panel-item' + (msg === selected ? ' selected' : ''),
-                onClick: () => {
-                  this.setState({ selected: msg });
-                  this.setActive('unitTest', !msg.data ? false : active.unitTest);
-                  active.timeTravel && window.messageClient({ selected: msg });
-                }
-              }, msg.message)
-            )
+              key: msg.id,
+              className: 'panel-item' + (msg === selected ? ' selected' : ''),
+              onClick: () => {
+                this.setState({ selected: msg });
+                this.setActive('unitTest', !msg.data ? false : active.unitTest);
+                active.timeTravel && window.messageClient({ selected: msg });
+              }
+            },
+            msg.message))
           )]
         ),
 
