@@ -25,7 +25,7 @@
     queue = [];
   };
 
-  const processMsg = msg => ([predicate, listener]) => predicate(msg) && listener(msg);
+  const processMsg = msg => ([predicate, ...listeners]) => predicate(msg) && listeners.map(l => l(msg));
 
   var backgroundPageConnection = chrome.runtime.connect({ name: 'ArchDevToolsPanel' });
 

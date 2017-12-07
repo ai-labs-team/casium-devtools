@@ -38,5 +38,6 @@
     }
   }, false);
 
+  window.messageClient({ state: 'refresh' });
 
 })();

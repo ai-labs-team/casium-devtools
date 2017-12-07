@@ -90,18 +90,11 @@ class App extends Component {
     ]);
 
     window.LISTENERS.push([
-      where({ from: equals('Arch'), state: isNil }),
-      () => this.state.active.replay && (window.messageClient({ selected: this.state.selected }) || this.setState({ haltForReplay: false })),
-    ]);
-
-    window.LISTENERS.push([
-      where({ from: equals('ArchDevToolsPageScript'), state: equals('initialized') }),
-      () => this.state.active.clearOnReload && this.clearMessages(),
-    ]);
-
-    window.LISTENERS.push([
       where({ from: equals('ArchDevToolsPageScript'), state: equals('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
+      () => this.state.active.clearOnReload && this.clearMessages(),
+      () => window.messageClient({ selected: this.state.selected }),
+      () => this.setState({ haltForReplay: false }),
     ]);
 
     window.FLUSH_QUEUE();
@@ -119,7 +112,7 @@ class App extends Component {
     this.setState({
       messages: [],
       selected: null,
-      active: merge(this.state.active, { timeTravel: false })
+      active: merge(this.state.active, { timeTravel: false, haltForReplay: false })
     });
   }
 
@@ -165,7 +158,7 @@ class App extends Component {
           selected && e(FontAwesome, {
             key: 'replay',
             name: 'replay',
-            title: 'Replay Message',
+            title: 'Replay Message on Reload',
             className: 'tool-button fa fa-play-circle-o' + (active.replay ? ' on' : ''),
             onClick: () => {
               selected && this.toggleActive('replay');

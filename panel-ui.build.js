@@ -19614,18 +19614,11 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
     ]);
 
     window.LISTENERS.push([
-      Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('Arch'), state: __WEBPACK_IMPORTED_MODULE_0_ramda__["isNil"] }),
-      () => this.state.active.replay && (window.messageClient({ selected: this.state.selected }) || this.setState({ haltForReplay: false })),
-    ]);
-
-    window.LISTENERS.push([
-      Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('ArchDevToolsPageScript'), state: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('initialized') }),
-      () => this.state.active.clearOnReload && this.clearMessages(),
-    ]);
-
-    window.LISTENERS.push([
       Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('ArchDevToolsPageScript'), state: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
+      () => this.state.active.clearOnReload && this.clearMessages(),
+      () => window.messageClient({ selected: this.state.selected }),
+      () => this.setState({ haltForReplay: false }),
     ]);
 
     window.FLUSH_QUEUE();
@@ -19643,7 +19636,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
     this.setState({
       messages: [],
       selected: null,
-      active: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(this.state.active, { timeTravel: false })
+      active: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(this.state.active, { timeTravel: false, haltForReplay: false })
     });
   }
 
@@ -19689,7 +19682,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
           selected && Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, {
             key: 'replay',
             name: 'replay',
-            title: 'Replay Message',
+            title: 'Replay Message on Reload',
             className: 'tool-button fa fa-play-circle-o' + (active.replay ? ' on' : ''),
             onClick: () => {
               selected && this.toggleActive('replay');
