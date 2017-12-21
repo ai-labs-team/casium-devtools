@@ -1,6 +1,6 @@
 // Chrome automatically creates a background.html page for this to execute.
 // This can access the inspected page via executeScript
-// 
+//
 // Can use:
 // chrome.tabs.*
 // chrome.extension.*
@@ -21,7 +21,7 @@ chrome.extension.onConnect.addListener(function (port) {
         chrome.tabs.sendMessage(message.tabId, message, sendResponse);
       }
 
-    // This accepts messages from the inspectedPage and 
+    // This accepts messages from the inspectedPage and
     // sends them to the panel
     } else {
       port.postMessage(message);
@@ -46,8 +46,8 @@ var ports = window.PORTS = {};
 var queues = window.QUEUES = {};
 
 var channels = {
-  ArchDevToolsPageScript: "ArchDevToolsPanel",
-  ArchDevToolsPanel: "ArchDevToolsPageScript"
+  CasiumDevToolsPageScript: "CasiumDevToolsPanel",
+  CasiumDevToolsPanel: "CasiumDevToolsPageScript"
 };
 
 // DevTools / page connection
