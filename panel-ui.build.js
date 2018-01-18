@@ -19619,7 +19619,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
     ]);
 
     window.LISTENERS.push([
-      Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('ArchDevToolsPageScript'), state: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('initialized') }),
+      Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('CasiumDevToolsPageScript'), state: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
       () => this.state.active.replay && window.messageClient({ selected: this.state.selected }),

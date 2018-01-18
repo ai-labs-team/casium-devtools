@@ -95,7 +95,7 @@ class App extends Component {
     ]);
 
     window.LISTENERS.push([
-      where({ from: equals('ArchDevToolsPageScript'), state: equals('initialized') }),
+      where({ from: equals('CasiumDevToolsPageScript'), state: equals('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
       () => this.state.active.replay && window.messageClient({ selected: this.state.selected }),
