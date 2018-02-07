@@ -19536,6 +19536,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
+const renderMessages = (messages, active, toggleTime) => {
+  if (messages.length === 0) {
+    return [];
+  }
+
+  if (messages.length === 1) {
+    return renderMessage(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["head"])(messages), active, toggleTime);
+  }
+
+  return renderMessageRange(messages);
+}
+
 const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, active, toggleTime) => {
   var items = !data ? [] : [
     Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-heading first panel-label', key: 'heading-msg' }, [
@@ -19583,6 +19595,18 @@ const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, ac
     Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-heading panel-label', key: 'relay' }, 'Relay'),
     Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({}, Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_5_react_inspector__["ObjectInspector"], { data: relay, expandLevel: 2 })),
   ]);
+}
+
+const renderMessageRange = (messages) => {
+  const firstMsg = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["head"])(messages), lastMsg = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["last"])(messages);
+  const finalData = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["set"])(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["lensPath"])(lastMsg.path), lastMsg.next, lastMsg.prev), diffMap = Object(__WEBPACK_IMPORTED_MODULE_3_json_diff__["diff"])(firstMsg.prev, finalData);
+
+  return [
+    Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-heading first panel-label', key: 'heading-diff' }, 'Aggregate Model Changes'),
+    diffMap === undefined ?
+      Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])('em', { style: { color: 'lightgray' } }, 'No changes') :
+    Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({}, Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_5_react_inspector__["ObjectInspector"], { data: diffMap, expandLevel: 3, nodeRenderer: __WEBPACK_IMPORTED_MODULE_8__view__["f" /* nodeRenderer */], mapper: __WEBPACK_IMPORTED_MODULE_8__view__["b" /* diffNodeMapper */] }))
+  ];
 }
 
 /**
@@ -19773,7 +19797,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
             className: 'unit-test-content' + (active.unitTest ? ' on' : ''),
             key: 'test-contet'
           }, Object(__WEBPACK_IMPORTED_MODULE_6__test_generator__["a" /* generateUnitTest */])(selected[0])),
-          ...renderMessage(selected[0], this.state.active, this.toggleActive.bind(this, 'relativeTime'))
+          ...renderMessages(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'))
         ])
       ])
     ]);

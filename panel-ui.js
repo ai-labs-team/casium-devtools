@@ -13,6 +13,18 @@ import { generateUnitTest } from './test-generator';
 import { toPath, download, disableEvent, handleDrop } from './util';
 import { e, div, span, button, nodeRenderer, diffNodeMapper, formatDate, timeSince } from './view';
 
+const renderMessages = (messages, active, toggleTime) => {
+  if (messages.length === 0) {
+    return [];
+  }
+
+  if (messages.length === 1) {
+    return renderMessage(head(messages), active, toggleTime);
+  }
+
+  return renderMessageRange(messages);
+}
+
 const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, active, toggleTime) => {
   var items = !data ? [] : [
     div({ className: 'panel-heading first panel-label', key: 'heading-msg' }, [
@@ -60,6 +72,18 @@ const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, ac
     div({ className: 'panel-heading panel-label', key: 'relay' }, 'Relay'),
     div({}, e(ObjectInspector, { data: relay, expandLevel: 2 })),
   ]);
+}
+
+const renderMessageRange = (messages) => {
+  const firstMsg = head(messages), lastMsg = last(messages);
+  const finalData = set(lensPath(lastMsg.path), lastMsg.next, lastMsg.prev), diffMap = diff(firstMsg.prev, finalData);
+
+  return [
+    div({ className: 'panel-heading first panel-label', key: 'heading-diff' }, 'Aggregate Model Changes'),
+    diffMap === undefined ?
+      e('em', { style: { color: 'lightgray' } }, 'No changes') :
+    div({}, e(ObjectInspector, { data: diffMap, expandLevel: 3, nodeRenderer, mapper: diffNodeMapper }))
+  ];
 }
 
 /**
@@ -250,7 +274,7 @@ class App extends Component {
             className: 'unit-test-content' + (active.unitTest ? ' on' : ''),
             key: 'test-contet'
           }, generateUnitTest(selected[0])),
-          ...renderMessage(selected[0], this.state.active, this.toggleActive.bind(this, 'relativeTime'))
+          ...renderMessages(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'))
         ])
       ])
     ]);
