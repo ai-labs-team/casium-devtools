@@ -1,6 +1,7 @@
 import {
   pipe, lensPath, set, identity, curry, merge, replace, propEq,
-  keys, values, map, identity, equals, isNil, where
+  keys, values, map, identity, equals, isNil, where, contains,
+  head, last, slice, concat
 } from 'ramda';
 
 import React, { Component } from 'react';
@@ -11,6 +12,18 @@ import { ObjectInspector } from 'react-inspector';
 import { generateUnitTest } from './test-generator';
 import { toPath, download, disableEvent, handleDrop } from './util';
 import { e, div, span, button, nodeRenderer, diffNodeMapper, formatDate, timeSince } from './view';
+
+const renderMessages = (messages, active, toggleTime) => {
+  if (messages.length === 0) {
+    return [];
+  }
+
+  if (messages.length === 1) {
+    return renderMessage(head(messages), active, toggleTime);
+  }
+
+  return renderMessageRange(messages);
+}
 
 const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, active, toggleTime) => {
   var items = !data ? [] : [
@@ -61,6 +74,48 @@ const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, ac
   ]);
 }
 
+const renderMessageRange = (messages) => {
+  const firstMsg = head(messages), lastMsg = last(messages);
+  const finalData = set(lensPath(lastMsg.path), lastMsg.next, lastMsg.prev), diffMap = diff(firstMsg.prev, finalData);
+
+  return [
+    div({ className: 'panel-heading first panel-label', key: 'heading-diff' }, 'Aggregate Model Changes'),
+    diffMap === undefined ?
+      e('em', { style: { color: 'lightgray' } }, 'No changes') :
+    div({}, e(ObjectInspector, { data: diffMap, expandLevel: 3, nodeRenderer, mapper: diffNodeMapper }))
+  ];
+}
+
+/**
+ * Extend an existing message selection (`selected`) based on a list of all
+ * messages (`messages`) and a newly selected message (`message`).
+ */
+const extendSelection = (messages, selected, msg) => {
+  if (!selected.length) {
+    return [msg];
+  }
+
+  const msgIdx = messages.indexOf(msg);
+  const lastIdx = messages.indexOf(last(selected));
+
+  if (msgIdx > lastIdx) {
+    // Message is after end of selection; gather messages from last selected to message and append to selection
+    const newMessages = slice(lastIdx + 1, msgIdx + 1, messages);
+    return concat(selected, newMessages);
+  }
+
+  const firstIdx = messages.indexOf(head(selected));
+
+  if (msgIdx < firstIdx) {
+    // Message is before start of selection; gather messages from message to first selected and prepend to selection
+    const newMessages = slice(msgIdx, firstIdx, messages);
+    return concat(newMessages, selected);
+  }
+
+  // Message is within selection; gather first selected to message
+  return slice(firstIdx, msgIdx + 1, messages);
+}
+
 class App extends Component {
 
   constructor(props) {
@@ -68,7 +123,7 @@ class App extends Component {
 
     this.state = {
       messages: [],
-      selected: null,
+      selected: [],
       active: {
         timeTravel: false,
         clearOnReload: false,
@@ -98,7 +153,7 @@ class App extends Component {
       where({ from: equals('CasiumDevToolsPageScript'), state: equals('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
-      () => this.state.active.replay && window.messageClient({ selected: this.state.selected }),
+      () => this.state.active.replay && window.messageClient({ selected: this.state.selected[0] }),
     ]);
 
     window.FLUSH_QUEUE();
@@ -115,7 +170,7 @@ class App extends Component {
   clearMessages() {
     this.setState({
       messages: (window.MESSAGES = []),
-      selected: null,
+      selected: [],
       haltForReplay: false,
       active: merge(this.state.active, { timeTravel: false, replay: false })
     });
@@ -160,15 +215,15 @@ class App extends Component {
               download({ data: JSON.stringify(this.state.messages, null, 2), filename: 'message-log.json' });
             }
           }),
-          selected && e(FontAwesome, {
+          selected.length ? e(FontAwesome, {
             key: 'replay',
             name: 'replay',
             title: 'Replay Message on Reload',
             className: 'tool-button fa fa-play-circle-o' + (active.replay ? ' on' : ''),
             onClick: () => {
-              selected && this.toggleActive('replay');
+              selected.length && this.toggleActive('replay');
             }
-          })
+          }) : null
         ]),
 
         span({ className: 'panel-tools-right' }, [
@@ -177,22 +232,22 @@ class App extends Component {
               className: 'first' + (this.state.active.prevState ? ' selected' : ''),
               onClick: () => this.toggleActive('prevState')
             }, [
-                '{', e(FontAwesome, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
-              ]),
+              '{', e(FontAwesome, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
+            ]),
 
             button({
               className: (this.state.active.diffState ? ' selected' : ''),
               onClick: () => this.toggleActive('diffState')
             }, [
-                '{', span({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', span({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
-              ]),
+              '{', span({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', span({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
+            ]),
 
             button({
               className: 'last' + (this.state.active.nextState ? ' selected' : ''),
               onClick: () => this.toggleActive('nextState')
             }, [
-                '{', e(FontAwesome, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
-              ])
+              '{', e(FontAwesome, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
+            ])
           ])
         ])
       ]),
@@ -202,23 +257,24 @@ class App extends Component {
           div({ className: 'panel-list', key: 'message-list' },
             messages.map(msg => div({
               key: msg.id,
-              className: 'panel-item' + (msg === selected ? ' selected' : ''),
-              onClick: () => {
-                this.setState({ selected: msg });
+              className: 'panel-item' + (contains(msg, selected) ? ' selected' : ''),
+              onClick: (e) => {
+                const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg];
+                this.setState({ selected: nextSelection });
+
                 this.setActive('unitTest', !msg.data ? false : active.unitTest);
                 active.timeTravel && window.messageClient({ selected: msg });
               }
-            },
-            msg.message))
+            }, msg.message))
           )]
         ),
 
-        div({ className: 'panel content with-heading', key: 'panel-head' }, !selected && [] || [
+        div({ className: 'panel content with-heading', key: 'panel-head' }, !selected.length ? [] : [
           div({
             className: 'unit-test-content' + (active.unitTest ? ' on' : ''),
             key: 'test-contet'
-          }, generateUnitTest(selected)),
-          ...renderMessage(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'))
+          }, generateUnitTest(selected[0])),
+          ...renderMessages(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'))
         ])
       ])
     ]);

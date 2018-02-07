@@ -65,6 +65,7 @@ html, body {
 .panel-item {
   padding: 10px 15px;
   cursor: default;
+  user-select: none;
 }
 .panel-item.selected {
   color: white;
@@ -143,14 +144,14 @@ html, body {
   white-space: pre;
   overflow-x: hidden;
   overflow-y: auto;
-  font-family: Monaco;
+  font-family: monaco, Consolas, "Lucida Console", monospace;
   transition: all 0.3s ease;
   background: rgb(230, 230, 230);
 }
 
 .unit-test-content.on {
-  top: 0;
-  margin-bottom: 0;
+  top: 15px;
+  margin-bottom: 15px;
   transition: all 0.3s ease;
 }
 
