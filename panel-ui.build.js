@@ -50463,10 +50463,16 @@ module.exports={
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util__ = __webpack_require__(179);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(136);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_inspector_ObjectLabel__ = __webpack_require__(176);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_inspector_ObjectLabel___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_inspector_ObjectLabel__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_inspector_ObjectRootLabel__ = __webpack_require__(175);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_inspector_ObjectRootLabel___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_inspector_ObjectRootLabel__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_ObjectName__ = __webpack_require__(113);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_ObjectName___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_ObjectName__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_ObjectValue__ = __webpack_require__(114);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_ObjectValue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_ObjectValue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_react_inspector_lib_object_inspector_ObjectLabel__ = __webpack_require__(176);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_react_inspector_lib_object_inspector_ObjectLabel___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_react_inspector_lib_object_inspector_ObjectLabel__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_react_inspector_lib_object_inspector_ObjectRootLabel__ = __webpack_require__(175);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_react_inspector_lib_object_inspector_ObjectRootLabel___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_react_inspector_lib_object_inspector_ObjectRootLabel__);
+
+
 
 
 
@@ -50489,7 +50495,7 @@ const button = e('button');
 
 const nodeRenderer = (obj) => {
   const isRoot = obj.depth === 0;
-  const tag = isRoot ? __WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_inspector_ObjectRootLabel___default.a : __WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_inspector_ObjectLabel___default.a;
+  const tag = isRoot ? __WEBPACK_IMPORTED_MODULE_6_react_inspector_lib_object_inspector_ObjectRootLabel___default.a : __WEBPACK_IMPORTED_MODULE_5_react_inspector_lib_object_inspector_ObjectLabel___default.a;
   const append = isRoot ? {} : { isNonenumerable: obj.isNonenumerable };
   const keyMap = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["replace"])(/__(added|deleted)$/, '');
   const name = obj.name && keyMap(obj.name || '') || obj.name;
@@ -50499,7 +50505,7 @@ const nodeRenderer = (obj) => {
   );
 
   if (Object(__WEBPACK_IMPORTED_MODULE_1__util__["c" /* isModifiedObject */])(obj.data)) {
-    return e(tag, Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(append, { name, data: obj.data.__new }));
+    return e(diffObjectLabel, Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(append, { name, data: obj.data }));
   }
   if (Object(__WEBPACK_IMPORTED_MODULE_1__util__["b" /* isModifiedArray */])(obj.data)) {
     return e(tag, Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(append, { name, data: obj.data.filter(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["propEq"])('length', 2)) }));
@@ -50545,6 +50551,20 @@ const diffNodeMapper = ({ Arrow, expanded, styles, name, data, onClick, shouldSh
 };
 /* harmony export (immutable) */ __webpack_exports__["b"] = diffNodeMapper;
 
+
+/**
+ * Re-implements ObjectLabel to render a prettier diff for primitive values
+ */
+const diffObjectLabel = ({name, data, isNonenumerable}) => {
+  return span({}, [
+    e(__WEBPACK_IMPORTED_MODULE_3_react_inspector_lib_object_ObjectName___default.a, {name, dimmed: isNonenumerable}),
+    span({}, ': '),
+    e(__WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_ObjectValue___default.a, { object: data.__old }),
+    span({}, ' \u2192 '),
+    e(__WEBPACK_IMPORTED_MODULE_4_react_inspector_lib_object_ObjectValue___default.a, { object: data.__new })
+  ]);
+}
+/* unused harmony export diffObjectLabel */
 
 
 const formatDate = (ts) => {
