@@ -19585,6 +19585,36 @@ const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, ac
   ]);
 }
 
+/**
+ * Extend an existing message selection (`selected`) based on a list of all
+ * messages (`messages`) and a newly selected message (`message`).
+ */
+const extendSelection = (messages, selected, msg) => {
+  if (!selected.length) {
+    return [msg];
+  }
+
+  const msgIdx = messages.indexOf(msg);
+  const lastIdx = messages.indexOf(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["last"])(selected));
+
+  if (msgIdx > lastIdx) {
+    // Message is after end of selection; gather messages from last selected to message and append to selection
+    const newMessages = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["slice"])(lastIdx + 1, msgIdx + 1, messages);
+    return Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["concat"])(selected, newMessages);
+  }
+
+  const firstIdx = messages.indexOf(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["head"])(selected));
+
+  if (msgIdx < firstIdx) {
+    // Message is before start of selection; gather messages from message to first selected and prepend to selection
+    const newMessages = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["slice"])(msgIdx, firstIdx, messages);
+    return Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["concat"])(newMessages, selected);
+  }
+
+  // Message is within selection; gather first selected to message
+  return Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["slice"])(firstIdx, msgIdx + 1, messages);
+}
+
 class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
 
   constructor(props) {
@@ -19592,7 +19622,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
 
     this.state = {
       messages: [],
-      selected: null,
+      selected: [],
       active: {
         timeTravel: false,
         clearOnReload: false,
@@ -19622,7 +19652,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
       Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["where"])({ from: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('CasiumDevToolsPageScript'), state: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["equals"])('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
-      () => this.state.active.replay && window.messageClient({ selected: this.state.selected }),
+      () => this.state.active.replay && window.messageClient({ selected: this.state.selected[0] }),
     ]);
 
     window.FLUSH_QUEUE();
@@ -19639,7 +19669,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
   clearMessages() {
     this.setState({
       messages: (window.MESSAGES = []),
-      selected: null,
+      selected: [],
       haltForReplay: false,
       active: Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["merge"])(this.state.active, { timeTravel: false, replay: false })
     });
@@ -19684,15 +19714,15 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
               Object(__WEBPACK_IMPORTED_MODULE_7__util__["a" /* download */])({ data: JSON.stringify(this.state.messages, null, 2), filename: 'message-log.json' });
             }
           }),
-          selected && Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, {
+          selected.length ? Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, {
             key: 'replay',
             name: 'replay',
             title: 'Replay Message on Reload',
             className: 'tool-button fa fa-play-circle-o' + (active.replay ? ' on' : ''),
             onClick: () => {
-              selected && this.toggleActive('replay');
+              selected.length && this.toggleActive('replay');
             }
-          })
+          }) : null
         ]),
 
         Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ className: 'panel-tools-right' }, [
@@ -19701,22 +19731,22 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
               className: 'first' + (this.state.active.prevState ? ' selected' : ''),
               onClick: () => this.toggleActive('prevState')
             }, [
-                '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
-              ]),
+              '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-left', title: 'View Previous State' }), '}'
+            ]),
 
             Object(__WEBPACK_IMPORTED_MODULE_8__view__["a" /* button */])({
               className: (this.state.active.diffState ? ' selected' : ''),
               onClick: () => this.toggleActive('diffState')
             }, [
-                '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
-              ]),
+              '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(100, 150, 150)' } }, '+'), '|', Object(__WEBPACK_IMPORTED_MODULE_8__view__["g" /* span */])({ style: { color: 'rgb(150, 100, 100)' } }, '-'), '}'
+            ]),
 
             Object(__WEBPACK_IMPORTED_MODULE_8__view__["a" /* button */])({
               className: 'last' + (this.state.active.nextState ? ' selected' : ''),
               onClick: () => this.toggleActive('nextState')
             }, [
-                '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
-              ])
+              '{', Object(__WEBPACK_IMPORTED_MODULE_8__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_4_react_fontawesome___default.a, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
+            ])
           ])
         ])
       ]),
@@ -19726,23 +19756,24 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
           Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel-list', key: 'message-list' },
             messages.map(msg => Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({
               key: msg.id,
-              className: 'panel-item' + (msg === selected ? ' selected' : ''),
-              onClick: () => {
-                this.setState({ selected: msg });
+              className: 'panel-item' + (Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["contains"])(msg, selected) ? ' selected' : ''),
+              onClick: (e) => {
+                const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg];
+                this.setState({ selected: nextSelection });
+
                 this.setActive('unitTest', !msg.data ? false : active.unitTest);
                 active.timeTravel && window.messageClient({ selected: msg });
               }
-            },
-            msg.message))
+            }, msg.message))
           )]
         ),
 
-        Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel content with-heading', key: 'panel-head' }, !selected && [] || [
+        Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({ className: 'panel content with-heading', key: 'panel-head' }, !selected.length ? [] : [
           Object(__WEBPACK_IMPORTED_MODULE_8__view__["c" /* div */])({
             className: 'unit-test-content' + (active.unitTest ? ' on' : ''),
             key: 'test-contet'
-          }, Object(__WEBPACK_IMPORTED_MODULE_6__test_generator__["a" /* generateUnitTest */])(selected)),
-          ...renderMessage(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'))
+          }, Object(__WEBPACK_IMPORTED_MODULE_6__test_generator__["a" /* generateUnitTest */])(selected[0])),
+          ...renderMessage(selected[0], this.state.active, this.toggleActive.bind(this, 'relativeTime'))
         ])
       ])
     ]);

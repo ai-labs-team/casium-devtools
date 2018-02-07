@@ -65,6 +65,7 @@ html, body {
 .panel-item {
   padding: 10px 15px;
   cursor: default;
+  user-select: none;
 }
 .panel-item.selected {
   color: white;
