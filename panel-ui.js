@@ -1,31 +1,33 @@
 import {
-  pipe, lensPath, set, identity, curry, merge, replace, propEq,
+  pipe, lensPath, set, curry, merge, replace, propEq,
   keys, values, map, identity, equals, isNil, where, contains,
   head, last, slice, concat
 } from 'ramda';
 
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import titleCase from 'title-case';
 import { diff } from 'json-diff';
 import FontAwesome from 'react-fontawesome';
 import { ObjectInspector } from 'react-inspector';
 import { generateUnitTest } from './test-generator';
+import { runDependencyTrace } from './dependency-trace';
 import { toPath, download, disableEvent, handleDrop } from './util';
 import { e, div, span, button, nodeRenderer, diffNodeMapper, formatDate, timeSince } from './view';
 
-const renderMessages = (messages, active, toggleTime) => {
+const renderMessages = (messages, active, toggleTime, dependencyTrace) => {
   if (messages.length === 0) {
     return [];
   }
 
   if (messages.length === 1) {
-    return renderMessage(head(messages), active, toggleTime);
+    return renderMessage(head(messages), active, toggleTime, dependencyTrace);
   }
 
   return renderMessageRange(messages);
 }
 
-const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, active, toggleTime) => {
+const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, active, toggleTime, dependencyTrace) => {
   var items = !data ? [] : [
     div({ className: 'panel-heading first panel-label', key: 'heading-msg' }, [
       div({ className: 'panel-heading-side time-toggle', onClick: toggleTime }, [
@@ -59,10 +61,15 @@ const renderMessage = ({ name, ts, data, commands, prev, next, path, relay }, ac
     prevState: [
       div({ className: 'panel-heading panel-label' }, 'Previous Model'),
       div({}, e(ObjectInspector, { data: prev, expandLevel: 2 })),
+    ],
+    dependencies: [
+      ...renderDependencyTrace(dependencyTrace, 'model'),
+      ...renderDependencyTrace(dependencyTrace, 'message'),
+      ...renderDependencyTrace(dependencyTrace, 'relay'),
     ]
   }
 
-  const viewKeys = ['diffState', 'nextState', 'prevState'];
+  const viewKeys = ['diffState', 'nextState', 'prevState', 'dependencies'];
 
   for (var i = 0; i < viewKeys.length; i++) {
     if (active[viewKeys[i]]) items = items.concat(views[viewKeys[i]]);
@@ -82,7 +89,32 @@ const renderMessageRange = (messages) => {
     div({ className: 'panel-heading first panel-label', key: 'heading-diff' }, 'Aggregate Model Changes'),
     diffMap === undefined ?
       e('em', { style: { color: 'lightgray' } }, 'No changes') :
-    div({}, e(ObjectInspector, { data: diffMap, expandLevel: 3, nodeRenderer, mapper: diffNodeMapper }))
+      div({}, e(ObjectInspector, { data: diffMap, expandLevel: 3, nodeRenderer, mapper: diffNodeMapper }))
+  ];
+}
+
+const renderDependencyTrace = (trace, key) => {
+  const title = div({ className: 'panel-heading panel-label' }, `Dependencies - ${titleCase(key)}`);
+
+  if (!trace || !trace[key]) {
+    return [
+      title,
+      e('em', { style: { color: 'lightgray' } }, 'Waiting for data')
+    ];
+  }
+
+  if (!trace[key].length) {
+    return [
+      title,
+      e('em', { style: { color: 'lightgray' } }, 'No dependencies')
+    ];
+  }
+
+  const paths = trace[key].map(path => e('code', { className: 'dependency-trace-path' }, path.join('.')));
+
+  return [
+    title,
+    ...paths
   ];
 }
 
@@ -124,6 +156,7 @@ class App extends Component {
     this.state = {
       messages: [],
       selected: [],
+      dependencyTrace: undefined,
       active: {
         timeTravel: false,
         clearOnReload: false,
@@ -132,7 +165,8 @@ class App extends Component {
         nextState: true,
         prevState: false,
         relativeTime: false,
-        replay: false
+        replay: false,
+        dependencies: false
       },
       haltForReplay: false,
     };
@@ -141,7 +175,7 @@ class App extends Component {
   componentWillMount() {
     window.LISTENERS.push([
       where({ from: equals('Arch'), state: isNil }),
-      message => !this.state.haltForReplay && this.setState({ messages: this.state.messages.concat(message)}),
+      message => !this.state.haltForReplay && this.setState({ messages: this.state.messages.concat(message) }),
     ]);
 
     window.LISTENERS.push([
@@ -164,7 +198,9 @@ class App extends Component {
   }
 
   toggleActive(key) {
-    this.setActive(key, !this.state.active[key]);
+    const nextValue = !this.state.active[key];
+    this.setActive(key, nextValue);
+    return nextValue;
   }
 
   clearMessages() {
@@ -248,6 +284,22 @@ class App extends Component {
             }, [
               '{', e(FontAwesome, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
             ])
+          ]),
+
+          span({ className: 'button-group' }, [
+            button({
+              className: 'first' + (this.state.active.dependencies ? ' selected' : ''),
+              onClick: () => {
+                if (this.toggleActive('dependencies')) {
+                  runDependencyTrace(this.state.selected[0])
+                    .then(dependencyTrace => this.setState({ dependencyTrace }));
+                } else {
+                  this.setState({ dependencyTrace: undefined });
+                }
+              }
+            }, [
+              e(FontAwesome, { name: 'search', title: 'Trace Dependencies' })
+            ])
           ])
         ])
       ]),
@@ -264,6 +316,11 @@ class App extends Component {
 
                 this.setActive('unitTest', !msg.data ? false : active.unitTest);
                 active.timeTravel && window.messageClient({ selected: msg });
+
+                if (active.dependencies) {
+                  runDependencyTrace(msg)
+                    .then(dependencyTrace => this.setState({ dependencyTrace }));
+                }
               }
             }, msg.message))
           )]
@@ -274,7 +331,7 @@ class App extends Component {
             className: 'unit-test-content' + (active.unitTest ? ' on' : ''),
             key: 'test-contet'
           }, generateUnitTest(selected[0])),
-          ...renderMessages(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'))
+          ...renderMessages(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'), this.state.dependencyTrace)
         ])
       ])
     ]);
