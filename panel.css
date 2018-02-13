@@ -144,7 +144,7 @@ html, body {
   white-space: pre;
   overflow-x: hidden;
   overflow-y: auto;
-  font-family: monaco, Consolas, "Lucida Console", monospace;
+  font-family: Menlo, monospace;
   transition: all 0.3s ease;
   background: rgb(230, 230, 230);
 }
@@ -181,4 +181,12 @@ html, body {
   left: -8.5px;
   font-size: 12px;
   font-family: monospace;
+}
+
+.dependency-trace-path {
+  font-family: Menlo, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  color: rgb(136, 19, 145);
+  display: block;
 }
