@@ -1,6 +1,6 @@
 import {
-  anyPass, keys, lensPath, view, set, traverse, merge, is, zipObj,
-  map, pipe, values, filter, replace, slice, startsWith
+  anyPass, has, keys, lensPath, view, set, traverse, merge, is, zipObj, map,
+  pipe, values, filter, replace, slice, startsWith, tail
 } from 'ramda';
 import hjson from 'hjson';
 import { diff } from 'json-diff';
@@ -21,10 +21,29 @@ const toJsVal = (val, indent = 2) => hjson.stringify(val, formatOpts)
   .map((str, i) => i === 0 ? str : (' ').repeat(indent) + str)
   .join('\n');
 
+const hasPath = (path, data) => {
+  const key = path[0];
+
+  if (!has(key, data)) {
+    return false;
+  }
+
+  const value = data[key];
+  if (is(Object, value)) {
+    return hasPath(tail(path), value);
+  }
+
+  return true;
+}
+
 const deepPick = (data, paths) =>
   paths
     .sort((a, b) => a.length > b.length)
     .reduce((result, path) => {
+      if (!hasPath(path, data)) {
+        return result;
+      }
+
       const lens = lensPath(path);
       const value = view(lens, data);
 

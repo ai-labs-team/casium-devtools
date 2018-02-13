@@ -49545,10 +49545,29 @@ const toJsVal = (val, indent = 2) => __WEBPACK_IMPORTED_MODULE_1_hjson___default
   .map((str, i) => i === 0 ? str : (' ').repeat(indent) + str)
   .join('\n');
 
+const hasPath = (path, data) => {
+  const key = path[0];
+
+  if (!Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["has"])(key, data)) {
+    return false;
+  }
+
+  const value = data[key];
+  if (Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["is"])(Object, value)) {
+    return hasPath(Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["tail"])(path), value);
+  }
+
+  return true;
+}
+
 const deepPick = (data, paths) =>
   paths
     .sort((a, b) => a.length > b.length)
     .reduce((result, path) => {
+      if (!hasPath(path, data)) {
+        return result;
+      }
+
       const lens = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["lensPath"])(path);
       const value = Object(__WEBPACK_IMPORTED_MODULE_0_ramda__["view"])(lens, data);
 
