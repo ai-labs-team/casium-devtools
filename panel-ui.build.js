@@ -19821,7 +19821,7 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
         prevState: false,
         relativeTime: false,
         replay: false,
-        dependencies: false
+        dependencies: true
       },
       haltForReplay: false,
     };
@@ -19947,22 +19947,6 @@ class App extends __WEBPACK_IMPORTED_MODULE_1_react__["Component"] {
               '{', Object(__WEBPACK_IMPORTED_MODULE_10__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_5_react_fontawesome___default.a, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
             ])
           ]),
-
-          Object(__WEBPACK_IMPORTED_MODULE_10__view__["g" /* span */])({ className: 'button-group' }, [
-            Object(__WEBPACK_IMPORTED_MODULE_10__view__["a" /* button */])({
-              className: 'first' + (this.state.active.dependencies ? ' selected' : ''),
-              onClick: () => {
-                if (this.toggleActive('dependencies')) {
-                  Object(__WEBPACK_IMPORTED_MODULE_8__dependency_trace__["a" /* runDependencyTrace */])(this.state.selected[0])
-                    .then(dependencyTrace => this.setState({ dependencyTrace }));
-                } else {
-                  this.setState({ dependencyTrace: undefined });
-                }
-              }
-            }, [
-              Object(__WEBPACK_IMPORTED_MODULE_10__view__["d" /* e */])(__WEBPACK_IMPORTED_MODULE_5_react_fontawesome___default.a, { name: 'search', title: 'Trace Dependencies' })
-            ])
-          ])
         ])
       ]),
 

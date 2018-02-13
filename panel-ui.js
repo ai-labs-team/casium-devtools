@@ -167,7 +167,7 @@ class App extends Component {
         prevState: false,
         relativeTime: false,
         replay: false,
-        dependencies: false
+        dependencies: true
       },
       haltForReplay: false,
     };
@@ -293,22 +293,6 @@ class App extends Component {
               '{', e(FontAwesome, { name: 'arrow-circle-o-right', title: 'View Next State' }), '}'
             ])
           ]),
-
-          span({ className: 'button-group' }, [
-            button({
-              className: 'first' + (this.state.active.dependencies ? ' selected' : ''),
-              onClick: () => {
-                if (this.toggleActive('dependencies')) {
-                  runDependencyTrace(this.state.selected[0])
-                    .then(dependencyTrace => this.setState({ dependencyTrace }));
-                } else {
-                  this.setState({ dependencyTrace: undefined });
-                }
-              }
-            }, [
-              e(FontAwesome, { name: 'search', title: 'Trace Dependencies' })
-            ])
-          ])
         ])
       ]),
 
