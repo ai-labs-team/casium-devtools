@@ -157,6 +157,7 @@ class App extends Component {
       messages: [],
       selected: [],
       dependencyTrace: undefined,
+      unitTest: undefined,
       active: {
         timeTravel: false,
         clearOnReload: false,
@@ -240,7 +241,14 @@ class App extends Component {
             name: 'check-circle-o',
             title: 'Toggle Unit Test',
             className: 'tool-button unit-test-button' + (active.unitTest ? ' on' : ''),
-            onClick: () => this.toggleActive('unitTest')
+            onClick: () => {
+              if (this.toggleActive('unitTest')) {
+                generateUnitTest(this.state.selected[0])
+                  .then(unitTest => this.setState({ unitTest }));
+              } else {
+                this.setState({ unitTest: undefined });
+              }
+            }
           }),
           e(FontAwesome, {
             key: 'save',
@@ -314,12 +322,16 @@ class App extends Component {
                 const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg];
                 this.setState({ selected: nextSelection });
 
-                this.setActive('unitTest', !msg.data ? false : active.unitTest);
                 active.timeTravel && window.messageClient({ selected: msg });
 
                 if (active.dependencies) {
                   runDependencyTrace(msg)
                     .then(dependencyTrace => this.setState({ dependencyTrace }));
+                }
+
+                if (active.unitTest) {
+                  generateUnitTest(msg)
+                    .then(unitTest => this.setState({ unitTest }));
                 }
               }
             }, msg.message))
@@ -329,8 +341,8 @@ class App extends Component {
         div({ className: 'panel content with-heading', key: 'panel-head' }, !selected.length ? [] : [
           div({
             className: 'unit-test-content' + (active.unitTest ? ' on' : ''),
-            key: 'test-contet'
-          }, generateUnitTest(selected[0])),
+            key: 'test-content'
+          }, this.state.unitTest),
           ...renderMessages(selected, this.state.active, this.toggleActive.bind(this, 'relativeTime'), this.state.dependencyTrace)
         ])
       ])
