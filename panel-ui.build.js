@@ -19619,12 +19619,7 @@ const runDependencyTrace = (msg) => {
 
   return new Promise((resolve, reject) => {
     chrome.devtools.inspectedWindow.eval(evalString, (result, error) => {
-      if (error) {
-        reject(error);
-	      return;
-      }
-
-      resolve(result);
+      error ? reject(error) : resolve(result);
     });
   });
 };
