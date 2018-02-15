@@ -243,7 +243,7 @@ class App extends Component {
             className: 'tool-button unit-test-button' + (active.unitTest ? ' on' : ''),
             onClick: () => {
               if (this.toggleActive('unitTest')) {
-                generateUnitTest(this.state.selected[0])
+                generateUnitTest(this.state.selected)
                   .then(unitTest => this.setState({ unitTest }));
               } else {
                 this.setState({ unitTest: undefined });
@@ -314,7 +314,7 @@ class App extends Component {
                 }
 
                 if (active.unitTest) {
-                  generateUnitTest(msg)
+                  generateUnitTest(nextSelection)
                     .then(unitTest => this.setState({ unitTest }));
                 }
               }

@@ -1,6 +1,6 @@
 import {
-  anyPass, has, keys, lensPath, view, set, traverse, merge, is, zipObj, map,
-  pipe, values, filter, replace, slice, startsWith, tail
+  any, has, head, keys, last, lensPath, view, set, traverse, merge, is,
+  zipObj, map, pipe, values, filter, pluck, replace, slice, startsWith, tail
 } from 'ramda';
 import hjson from 'hjson';
 import { diff } from 'json-diff';
@@ -50,39 +50,112 @@ const deepPick = (data, paths) =>
       return set(lens, value, result);
     }, {});
 
-export const generateUnitTest = (msg) => {
-  const { data, commands, prev, path, next, relay, message, name } = msg;
+/**
+ * Counts the consecutive entries in an array, eg `['foo', 'foo', 'bar', 'baz']`
+ * becomes [['foo', 2], ['bar', 1], ['baz', 1]]`
+ */
+const countConsecutive = (list) => {
+  const result = [];
 
-  if (!data) {
-    return Promise.resolve();
+  for (let i = 0, j = 0; i < list.length; i += 1) {
+    const current = list[i];
+    const next = list[i + 1];
+
+    if (!result[j]) {
+      result[j] = [current, 0];
+    }
+
+    result[j][1] += 1;
+
+    if (current !== next) {
+      j += 1;
+    }
   }
 
-  return runDependencyTrace(msg)
-    .then(trace => {
-      const hasCommands = commands && commands.length;
-      const delegateLens = lensPath(path);
-      const unformattedPrev = view(delegateLens, prev);
-      const prevState = toJsVal(deepPick(unformattedPrev, trace.model));
-      const msgData = keys(data).length ? toJsVal(deepPick(data, trace.message)) : '';
-      const newState = toJsVal(next);
-      const formattedRelay = keys(relay).length ? `, { relay: ${toJsVal(deepPick(relay, trace.relay))} }` : '';
-      const runPrefix = hasCommands ? `const commands = ` : '';
+  return result;
+}
 
-      let lines = [`it('should respond to ${message} messages', () => {`];
-      lines.push(`  const container = isolate(${name}${formattedRelay})`);
-      lines.push(`  container.push(${prevState});`);
-      lines.push(`  ${runPrefix}container.dispatch(new ${message}(${msgData}));`);
-      lines.push('');
-      lines.push(`  expect(container.state()).to.deep.equal(${newState});`);
+const messageNames = (msgTracePairs) =>
+  countConsecutive(msgTracePairs.map(part => part.msg.message))
+    .reduce((result, [message, count], index, list) => {
+      const append = count > 1 ? `${message} (x${count})` : message;
 
-      if (hasCommands) {
-        lines.push(`  expect(commands).to.deep.equal([`);
-        lines = lines.concat(commands.map(([name, data]) => `    new ${name}(${toJsVal(data)}),`));
-        lines.push(`  ]);`);
+      if (index === 0) {
+        return append;
       }
 
-      lines.push('})');
+      if (index === list.length - 1) {
+        return `${result} and ${append}`;
+      }
 
-      return lines.join('\n');
-    });
+      return `${result}, ${append}`;
+    }, '');
+
+const dispatchArg = ({ trace, msg }) => `new ${msg.message}(${toJsVal(deepPick(msg.data, trace.message))})`;
+
+const hasCommand = ({ msg }) => msg.commands && msg.commands.length;
+
+const containerDispatch = (msgTracePairs) => {
+  const cmdAssign = any(hasCommand, msgTracePairs) ? `const commands = ` : '';
+
+  if (msgTracePairs.length < 2) {
+    return [
+      `  ${cmdAssign}container.dispatch(${dispatchArg(msgTracePairs[0])});`
+    ];
+  }
+
+  const args = msgTracePairs.map((msgTracePair, index) => (
+    `    ${dispatchArg(msgTracePair)}${index < msgTracePairs.length - 1 ? ',' : ''}`
+  ));
+
+  return [
+    `  ${cmdAssign}container.dispatch(`,
+    ...args,
+    `  );`
+  ]
+}
+
+const expectCommands = (msgTracePairs) => {
+  const commands = msgTracePairs
+    .filter(hasCommand)
+    .map(({ msg }) => msg.commands.map(([name, data]) => `    new ${name}(${toJsVal(data)}), `));
+
+  return commands.length ? [
+    `  expect(commands).to.deep.equal([`,
+    ...commands,
+    `  ]);`,
+    ''
+  ] : [];
+}
+
+export const generateUnitTest = (messages) => {
+  return Promise.all(messages.map(runDependencyTrace))
+    .then(traces => traces.map((trace, i) => {
+      return {
+        msg: messages[i],
+        trace
+      }
+    }))
+    .then(msgTracePairs => {
+      const { msg: firstMsg, trace: firstTrace } = head(msgTracePairs), { msg: lastMsg } = last(msgTracePairs);
+
+      const relayArg = keys(firstMsg.relay).length ?
+        `, ${toJsVal({ relay: deepPick(firstMsg.relay, firstTrace.relay) })}` : '';
+
+      const initialState = toJsVal(firstMsg.prev);
+      const finalState = toJsVal(set(lensPath(lastMsg.path), lastMsg.next, lastMsg.prev));
+
+      const commandAssign = any(hasCommand, msgTracePairs) ? `const commands = ` : '';
+
+      return [
+        `it('should respond to ${messageNames(msgTracePairs)} messages', () => {) `,
+        `  const container = isolate(${firstMsg.name}${relayArg}); `,
+        `  container.push(${initialState}); `,
+        ...containerDispatch(msgTracePairs),
+        '',
+        ...expectCommands(msgTracePairs),
+        `  expect(container.state()).to.deep.equal(${finalState}); `,
+        `}); `
+      ].join('\n');
+    })
 }
