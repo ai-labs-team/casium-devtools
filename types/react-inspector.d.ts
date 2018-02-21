@@ -1,6 +1,10 @@
 declare module 'react-inspector' {
+  export interface NodeMapperOptions {
+    className: string;
+  }
+
   export type NodeRenderer<T> = (obj: ObjectNode<T>) => React.ReactElement;
-  export type NodeMapper<T> = (node: ObjectNode<T>) => React.ReactElement;
+  export type NodeMapper<T> = (node: ObjectNode<T>, options?: Partial<NodeMapperOptions>) => React.ReactElement;
 
   export interface ObjectNode<T extends {}> {
     Arrow: React.ReactElement;
@@ -30,4 +34,17 @@ declare module 'react-inspector' {
   export var ObjectInspector: React.ComponentClass<Props>;
   export var ObjectRootLabel: React.ComponentClass;
   export var ObjectLabel: React.ComponentClass;
+
+  interface ObjectNameProps {
+    name: string;
+    dimmed: boolean;
+  }
+
+  export var ObjectName: React.ComponentClass<ObjectNameProps>;
+
+  interface ObjectValueProps {
+    object?: {};
+  }
+
+  export var ObjectValue: React.ComponentClass<ObjectValueProps>;
 }

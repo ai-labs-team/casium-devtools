@@ -6,7 +6,7 @@ import { diff } from 'json-diff';
 import { SerializedMessage, Command } from './messaging';
 import { DependencyTrace, runDependencyTrace } from './dependency-trace';
 import { nextState, deepPick } from './util';
-import { nodeRenderer, diffNodeMapper } from './object-inspector';
+import { nodeRenderer, nodeMapper, diffNodeMapper } from './object-inspector';
 import { generateUnitTest } from './test-generator';
 import { MessageHeading } from './MessageHeading';
 
@@ -93,7 +93,7 @@ export class MessageView extends React.Component<Props, State> {
 
       const relayItem = Object.keys(relay).length > 0 ? [
         <div className="panel-label">Relay</div>,
-        <ObjectInspector data={relay} expandLevel={0} />
+        <ObjectInspector data={relay} expandLevel={0} mapper={nodeMapper} />
       ] : null;
 
       return (
@@ -105,7 +105,7 @@ export class MessageView extends React.Component<Props, State> {
           />
           <div className="message-properties">
             <div className="panel-label">Data</div>
-            <ObjectInspector data={data} expandLevel={0} />
+            <ObjectInspector data={data} expandLevel={0} mapper={nodeMapper} />
             {relayItem}
           </div>
         </div>
@@ -131,7 +131,7 @@ export class MessageView extends React.Component<Props, State> {
     const items = commands.map((command, index) => (
       <div className="command" key={index}>
         <div className="panel-label">{command[0]}</div>
-        <ObjectInspector data={command[1]} expandLevel={1} />
+        <ObjectInspector data={command[1]} expandLevel={1} mapper={nodeMapper} />
       </div>
     ));
 
@@ -153,7 +153,7 @@ export class MessageView extends React.Component<Props, State> {
     return (
       <div className="previous-state">
         <div className="panel-heading panel-label">Previous Model</div>
-        <ObjectInspector data={prev} expandLevel={2} />
+        <ObjectInspector data={prev} expandLevel={2} mapper={nodeMapper} />
       </div>
     );
   }
@@ -196,7 +196,7 @@ export class MessageView extends React.Component<Props, State> {
     return (
       <div className="next-state">
         <div className="panel-heading panel-label">New Model</div>
-        <ObjectInspector data={next} expandLevel={2} />
+        <ObjectInspector data={next} expandLevel={2} mapper={nodeMapper} />
       </div>
     );
   }

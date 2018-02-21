@@ -1,4 +1,3 @@
-import * as sinon from 'sinon';
 import { expect } from 'chai';
 
 import { dependencyTrace } from './dependency-trace';
