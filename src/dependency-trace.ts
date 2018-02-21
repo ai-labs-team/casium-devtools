@@ -53,24 +53,20 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
 
   const archContext = window._ARCH_DEV_TOOLS_STATE.contexts[context];
   if (!archContext) {
-    throw Error(`Context '${context}' does not exist.`);
+    throw Error(`Context '${context}' does not exist`);
   }
 
   const key = Array.from(archContext.container.update.keys())
     .find(updater => updater.name === name);
 
   if (!key) {
-    throw Error(`Context '${context}' does not contain an Updater of type '${key}'`);
+    throw Error(`Context '${context}' does not contain an Updater of type '${name}'`);
   }
 
   const updater = archContext.container.update.get(key);
 
-  if (!key) {
-    throw Error(`Context '${context}' contains an Updater of type '${key}', but it could not be retrieved`);
-  }
-
   if (!updater) {
-    throw Error()
+    throw Error(`Context '${context}' contains an Updater of type '${key}', but it could not be retrieved`);
   }
 
   const modelPaths: string[][] = [];
@@ -83,13 +79,13 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
     }
   });
 
-  const messageProxy = deepGetProxy(message || {}, path => {
+  const messageProxy = deepGetProxy(message, path => {
     if (!messagePaths.find(existingPath => arrayEq(existingPath, path))) {
       messagePaths.push(path);
     }
   });
 
-  const relayProxy = deepGetProxy(relay || {}, path => {
+  const relayProxy = deepGetProxy(relay, path => {
     if (!relayPaths.find(existingPath => arrayEq(existingPath, path))) {
       relayPaths.push(path);
     }
