@@ -155,21 +155,6 @@ html, body {
   transition: all 0.3s ease;
 }
 
-.model-diff.modified-key .object-name {
-  font-weight: bold;
-  color: #e0bb26 !important;
-}
-
-.model-diff.added-key .object-name {
-  font-weight: bold;
-  color: green !important;
-}
-
-.model-diff.deleted-key .object-name {
-  font-weight: bold;
-  color: red !important;
-}
-
 .time-toggle {
   cursor: pointer;
 }

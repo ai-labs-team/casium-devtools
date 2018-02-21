@@ -1,8 +1,11 @@
 import * as React from 'react';
+import * as copy from 'copy-to-clipboard';
 import { both, flip, identity, keys, map, merge, pipe, propEq, replace, values, when, zipObj } from 'ramda';
 import { NodeRenderer, NodeMapper, ObjectRootLabel, ObjectLabel } from 'react-inspector';
 
-import { isModifiedObject, isModifiedArray } from './util';
+import { isModifiedObject, isModifiedArray, typeOf } from './util';
+
+import './object-inspector.scss';
 
 interface ObjectDiffNode {
   __new?: {};
@@ -46,7 +49,9 @@ export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
   return <Label {...props} />;
 }
 
-export const diffNodeMapper: NodeMapper<ObjectDiffNode> = ({ Arrow, expanded, styles, name, data, onClick, shouldShowArrow, shouldShowPlaceholder, children, renderedNode, childNodes }) => {
+export const diffNodeMapper: NodeMapper<ObjectDiffNode> = node => {
+  let { styles, name, data, onClick, shouldShowPlaceholder, renderedNode } = node;
+
   if (isModifiedObject(data)) {
     const placeholder = shouldShowPlaceholder || true ? (
       <span style={styles.treeNodePlaceholder}>
@@ -72,21 +77,39 @@ export const diffNodeMapper: NodeMapper<ObjectDiffNode> = ({ Arrow, expanded, st
     shouldShowPlaceholder = true;
   }
 
+  return nodeMapper(merge(node, { shouldShowPlaceholder }), { className });
+}
+
+export const CopyButton: React.StatelessComponent<{ data: any }> = ({ data }) => (
+  <button className="copy-node-value" onClick={e => {
+    copy(JSON.stringify(data, null, 2));
+    e.stopPropagation();
+  }}>
+    Copy
+  </button>
+);
+
+CopyButton.displayName = 'CopyButton';
+
+export const nodeMapper: NodeMapper<any> = ({ shouldShowArrow, children, expanded, styles, shouldShowPlaceholder, Arrow, onClick, renderedNode, childNodes, data }, options = { className: '' }) => {
   const placeholder = (shouldShowArrow || React.Children.count(children) > 0) ?
     <Arrow expanded={expanded} styles={styles.treeNodeArrow} /> :
     shouldShowPlaceholder ?
       <span style={styles.treeNodePlaceholder}>{PLACEHOLDER}</span> :
       null;
 
+  const type = typeOf(data);
+
   return (
-    <div>
+    <div className="mapped-node">
       <div
         style={styles.treeNodePreviewContainer}
         onClick={onClick}
-        className={className}
+        className={`mapped-node-preview-container ${options.className}`}
       >
         {placeholder}
         {renderedNode}
+        {type === 'object' || type === 'array' ? <CopyButton data={data} /> : null}
       </div>
       <ol role="group" style={styles.treeNodeChildNodesContainer}>
         {childNodes}

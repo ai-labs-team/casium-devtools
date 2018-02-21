@@ -77,3 +77,15 @@ describe('diffNodeMapper', () => {
     });
   });
 });
+
+describe('nodeMapper', () => {
+  it('displays a `copy` button on nested objects that copies JSON to clipboard', () => {
+    const wrapper = shallow(inspector.nodeMapper(obj));
+    expect(wrapper.find('CopyButton').exists()).to.equal(true);
+  });
+
+  it('does not display a `copy` button for primitive values', () => {
+    const wrapper = shallow(inspector.nodeMapper({ ...obj, data: 'test' }));
+    expect(wrapper.find('CopyButton').exists()).to.equal(false);
+  });
+});

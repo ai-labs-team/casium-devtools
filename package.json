@@ -15,6 +15,7 @@
   "author": "",
   "license": "BSD",
   "dependencies": {
+    "copy-to-clipboard": "^3.0.8",
     "hjson": "^3.1.0",
     "json-diff": "^0.5.2",
     "ramda": "^0.25.0",

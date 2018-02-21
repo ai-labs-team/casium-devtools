@@ -1,0 +1,51 @@
+.model-diff {
+    &.modified-key {
+        .object-name {
+            font-weight: bold;
+            color: #e0bb26 !important;
+        }
+    }
+
+    &.added-key {
+        .object-name {
+            font-weight: bold;
+            color: green !important;
+        }
+    }
+
+    &.deleted-key {
+        .object-name {
+            font-weight: bold;
+            color: red !important;
+        }
+    }
+}
+
+.mapped-node {
+    &-preview-container {
+        &:hover .copy-node-value {
+            display: inline-block;
+        }
+
+        .copy-node-value {
+            display: none;
+
+            font-size: 11px;
+            font-family: Menlo, monospace;
+            line-height: 13px;
+
+            padding: 0px 3px;
+            border-radius: 3px;
+            border: 1px solid #c3c3c3;
+            margin-left: 10px;
+
+            background-color: #f2f2f2;
+
+            cursor: pointer;
+
+            &:hover {
+                background-color: #e0e0e0;
+            }
+        }
+    }
+}
