@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as copy from 'copy-to-clipboard';
 import { both, flip, identity, keys, map, merge, pipe, propEq, replace, values, when, zipObj } from 'ramda';
-import { NodeRenderer, NodeMapper, ObjectRootLabel, ObjectLabel } from 'react-inspector';
+import { NodeRenderer, NodeMapper, ObjectRootLabel, ObjectLabel, ObjectName, ObjectValue } from 'react-inspector';
 
 import { isModifiedObject, isModifiedArray, typeOf } from './util';
 
@@ -28,7 +28,7 @@ export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
   );
 
   if (isModifiedObject(obj.data)) {
-    return <Label {...append({ name, data: obj.data.__new }) } />
+    return <DiffObjectLabel {...append({ name, data: obj.data }) } />
   }
 
   if (isModifiedArray(obj.data)) {
@@ -48,6 +48,16 @@ export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
 
   return <Label {...props} />;
 }
+
+const DiffObjectLabel: NodeRenderer<ObjectDiffNode> = ({ name, isNonenumerable, data }) => (
+  <span>
+    <ObjectName name={name} dimmed={isNonenumerable} />
+    <span>: </span>
+    <ObjectValue object={data.__old} />
+    <span>{' \u2192 '}</span>
+    <ObjectValue object={data.__new} />
+  </span>
+);
 
 export const diffNodeMapper: NodeMapper<ObjectDiffNode> = node => {
   let { styles, name, data, onClick, shouldShowPlaceholder, renderedNode } = node;
@@ -80,7 +90,7 @@ export const diffNodeMapper: NodeMapper<ObjectDiffNode> = node => {
   return nodeMapper(merge(node, { shouldShowPlaceholder }), { className });
 }
 
-export const CopyButton: React.StatelessComponent<{ data: any }> = ({ data }) => (
+const CopyButton: React.StatelessComponent<{ data: any }> = ({ data }) => (
   <button className="copy-node-value" onClick={e => {
     copy(JSON.stringify(data, null, 2));
     e.stopPropagation();
@@ -88,8 +98,6 @@ export const CopyButton: React.StatelessComponent<{ data: any }> = ({ data }) =>
     Copy
   </button>
 );
-
-CopyButton.displayName = 'CopyButton';
 
 export const nodeMapper: NodeMapper<any> = ({ shouldShowArrow, children, expanded, styles, shouldShowPlaceholder, Arrow, onClick, renderedNode, childNodes, data }, options = { className: '' }) => {
   const placeholder = (shouldShowArrow || React.Children.count(children) > 0) ?
