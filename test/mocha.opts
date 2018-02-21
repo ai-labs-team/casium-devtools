@@ -1,0 +1,2 @@
+--watch-extensions ts,tsx
+src/**/*_test.{ts,tsx}
