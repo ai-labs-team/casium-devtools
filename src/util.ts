@@ -45,10 +45,12 @@ export const typeOf = (val: any) => (
 export const isModifiedArray = both(
   pipe(typeOf, equals('array')),
   pipe(
-    map((val: any[]) => (typeOf(val) === 'array' && (
-      val.length === 2 && ['-', '+', '~'].includes(val[0]) ||
-      val.length === 1 && val[0] === ' '
-    ))),
+    map((val: any[]) => {
+      return (typeOf(val) === 'array' && (
+        val.length === 2 && ['-', '+', '~'].includes(val[0]) ||
+        val.length === 1 && val[0] === ' '
+      ));
+    }),
     reduce<boolean, boolean>(and, true)
   )
 );
@@ -62,7 +64,7 @@ export const hasPath = (path: string[], data: any): boolean => {
 
   const value = data[key];
   if (is(Object, value)) {
-    return hasPath(tail(path), value);
+    return path.length === 1 || hasPath(tail(path), value);
   }
 
   return true;

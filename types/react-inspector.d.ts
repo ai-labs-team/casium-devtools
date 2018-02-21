@@ -1,6 +1,6 @@
 declare module 'react-inspector' {
-  export type NodeRenderer<T> = (obj: ObjectNode<T>) => React.ReactNode;
-  export type NodeMapper<T> = (node: ObjectNode<T>) => React.ReactNode;
+  export type NodeRenderer<T> = (obj: ObjectNode<T>) => React.ReactElement;
+  export type NodeMapper<T> = (node: ObjectNode<T>) => React.ReactElement;
 
   export interface ObjectNode<T extends {}> {
     Arrow: React.ReactElement;

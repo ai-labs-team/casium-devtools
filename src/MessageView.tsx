@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { ObjectInspector } from 'react-inspector';
 import { unnest, identity, last, pluck } from 'ramda';
 import { diff } from 'json-diff';
@@ -14,11 +14,11 @@ import './MessageView.scss';
 
 interface Props {
   selected: SerializedMessage[];
-  showUnitTest: boolean;
-  showPrevState: boolean;
-  showDiffState: boolean;
-  showNextState: boolean;
-  useDependencyTrace: boolean;
+  showUnitTest?: boolean;
+  showPrevState?: boolean;
+  showDiffState?: boolean;
+  showNextState?: boolean;
+  useDependencyTrace?: boolean;
 }
 
 interface State {
@@ -45,6 +45,10 @@ export class MessageView extends React.Component<Props, State> {
         {this._renderNextState()}
       </div>
     ) : null;
+  }
+
+  componentDidMount() {
+    this._updateDependencyTraces(this.props.useDependencyTrace, this.props.selected);
   }
 
   componentWillReceiveProps(nextProps: Props) {
@@ -197,7 +201,7 @@ export class MessageView extends React.Component<Props, State> {
     );
   }
 
-  protected _updateDependencyTraces(enabled: boolean, selected: SerializedMessage[]) {
+  protected _updateDependencyTraces(enabled: boolean | undefined, selected: SerializedMessage[]) {
     const traces = enabled ?
       Promise.all(selected.map(runDependencyTrace)) :
       Promise.resolve([]);

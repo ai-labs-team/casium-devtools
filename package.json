@@ -5,8 +5,12 @@
   "main": "",
   "scripts": {
     "watch": "NODE_ENV=development webpack --watch",
-    "build": "NODE_ENV=production webpack",
-    "test": "nyc mocha"
+    "build": "yarn clean && NODE_ENV=production webpack",
+    "test": "nyc mocha",
+    "clean": "rm -rf dist",
+    "deps": "yarn && cd node_modules/react-inspector && yarn && yarn build",
+    "unit-test": "nyc mocha -r test/setup.js --opts test/mocha.opts",
+    "watch-tests": "nodemon -e ts,tsx -x yarn unit-test"
   },
   "author": "",
   "license": "BSD",
@@ -21,26 +25,58 @@
     "title-case": "^2.1.1"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.2",
     "@types/chrome": "^0.0.59",
+    "@types/enzyme": "^3.1.9",
     "@types/hjson": "^2.4.0",
+    "@types/mocha": "^2.2.48",
     "@types/ramda": "^0.25.18",
     "@types/react": "^16.0.38",
     "@types/react-dom": "^16.0.4",
     "@types/react-fontawesome": "^1.6.2",
+    "@types/sinon": "^4.1.3",
     "awesome-typescript-loader": "^3.4.1",
     "casium": "^1.0.11",
+    "chai": "^4.1.2",
     "copy-webpack-plugin": "^4.4.1",
     "css-loader": "^0.28.9",
+    "enzyme": "^3.3.0",
+    "enzyme-adapter-react-15": "^1.0.5",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.6",
     "font-awesome": "^4.7.0",
+    "ignore-styles": "^5.0.1",
+    "mocha": "^5.0.1",
     "node-sass": "^4.7.2",
+    "nodemon": "^1.15.1",
+    "nyc": "^11.4.1",
+    "react-test-renderer": "15",
     "sass-loader": "^6.0.6",
+    "sinon": "^4.3.0",
     "style-loader": "^0.20.1",
+    "ts-node": "^4.1.0",
     "typescript": "^2.7.1",
     "uglifyjs-webpack-plugin": "^1.2.0",
     "url-loader": "^0.6.2",
     "webpack": "^3.5.5",
     "webpack-chrome-extension-reloader": "^0.7.0"
+  },
+  "nyc": {
+    "all": true,
+    "include": [
+      "src/**/*.{ts,tsx}"
+    ],
+    "exclude": [
+      "src/**/*_test.{ts,tsx}"
+    ],
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "reporter": [
+      "text-summary",
+      "html",
+      "lcov"
+    ]
   }
 }

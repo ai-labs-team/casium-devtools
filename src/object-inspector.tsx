@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import { both, flip, identity, keys, map, merge, pipe, propEq, replace, values, when, zipObj } from 'ramda';
 import { NodeRenderer, NodeMapper, ObjectRootLabel, ObjectLabel } from 'react-inspector';
 
@@ -49,7 +49,7 @@ export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
 export const diffNodeMapper: NodeMapper<ObjectDiffNode> = ({ Arrow, expanded, styles, name, data, onClick, shouldShowArrow, shouldShowPlaceholder, children, renderedNode, childNodes }) => {
   if (isModifiedObject(data)) {
     const placeholder = shouldShowPlaceholder || true ? (
-      <span style={styles.treeNodePlacholder}>
+      <span style={styles.treeNodePlaceholder}>
         {PLACEHOLDER}
       </span>
     ) : null;

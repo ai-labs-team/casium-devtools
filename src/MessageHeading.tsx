@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 
 import { SerializedMessage } from './messaging';
 
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export class MessageHeading extends React.Component<Props> {
-  protected _interval?: number;
+  protected _interval?: NodeJS.Timer;
 
   render() {
     const { name, ts } = this.props.msg;
@@ -34,11 +34,11 @@ export class MessageHeading extends React.Component<Props> {
   }
 
   protected _setUpdateInterval() {
-    this._interval = window.setInterval(() => this.forceUpdate(), REFRESH_INTERVAL);
+    this._interval = setInterval(() => this.forceUpdate(), REFRESH_INTERVAL);
   }
 
   protected _clearUpdateInterval() {
-    this._interval && window.clearInterval(this._interval);
+    this._interval && clearInterval(this._interval);
   }
 
   componentWillReceiveProps(nextProps: Props) {

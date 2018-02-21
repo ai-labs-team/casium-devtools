@@ -1,5 +1,5 @@
-import React from 'react';
-import FontAwesome from 'react-fontawesome';
+import * as React from 'react';
+import * as FontAwesome from 'react-fontawesome';
 import { concat, contains, equals, head, last, isNil, merge, slice, where } from 'ramda';
 
 import { SerializedMessage } from './messaging';
@@ -58,7 +58,7 @@ const extendSelection = (messages: SerializedMessage[], selected: SerializedMess
   return slice(firstIdx, msgIdx + 1, messages);
 }
 
-export class App extends React.Component<void, State> {
+export class App extends React.Component<{}, State> {
   state: State = {
     messages: [],
     selected: [],

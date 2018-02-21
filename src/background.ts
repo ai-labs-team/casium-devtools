@@ -5,8 +5,6 @@
 // chrome.tabs.*
 // chrome.extension.*
 
-console.log(chrome.extension.onConnect);
-
 chrome.extension.onConnect.addListener(function(port) {
 
   const extensionListener = function(message: any, sender: any, sendResponse: (response: any) => void) {

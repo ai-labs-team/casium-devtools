@@ -1,4 +1,4 @@
-import hjson from 'hjson';
+import * as hjson from 'hjson';
 import { any, head, keys, last, lensPath, set } from 'ramda';
 
 import { SerializedMessage, Command } from './messaging';
@@ -93,7 +93,7 @@ const expectCommands = (pairs: MessageTracePair[]) => {
   const commands = pairs
     .filter(hasCommand)
     .map(([msg]) => (msg.commands as Command[]).map(([name, data]) =>
-      `    new ${name}(${toJsVal(data)}), `
+      `    new ${name}(${toJsVal(data)}),`
     ));
 
   return commands.length ? [
@@ -117,13 +117,13 @@ export const generateUnitTest = (messages: SerializedMessage[], traces: Dependen
   const finalState = toJsVal(set(lensPath(lastMsg.path), lastMsg.next, lastMsg.prev));
 
   return [
-    `it('should respond to ${messageNames(pairs)} messages', () => {) `,
-    `  const container = isolate(${firstMsg.name}${relayArg}); `,
-    `  container.push(${initialState}); `,
+    `it('should respond to ${messageNames(pairs)} messages', () => {`,
+    `  const container = isolate(${firstMsg.name}${relayArg});`,
+    `  container.push(${initialState});`,
     ...containerDispatch(pairs),
     '',
     ...expectCommands(pairs),
-    `  expect(container.state()).to.deep.equal(${finalState}); `,
-    `}); `
+    `  expect(container.state()).to.deep.equal(${finalState});`,
+    `});`
   ].join('\n');
 }
