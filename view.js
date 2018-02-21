@@ -2,6 +2,8 @@ import { curry, replace, when, identity, propEq, pipe, keys, map, flip, zipObj, 
 import { isModifiedObject, isModifiedArray, disableEvent, handleDrop } from './util';
 
 import React, { Children } from 'react';
+import ObjectName from 'react-inspector/lib/object/ObjectName';
+import ObjectValue from 'react-inspector/lib/object/ObjectValue';
 import ObjectLabel from 'react-inspector/lib/object-inspector/ObjectLabel';
 import ObjectRootLabel from 'react-inspector/lib/object-inspector/ObjectRootLabel';
 
@@ -22,7 +24,7 @@ export const nodeRenderer = (obj) => {
   );
 
   if (isModifiedObject(obj.data)) {
-    return e(tag, merge(append, { name, data: obj.data.__new }));
+    return e(diffObjectLabel, merge(append, { name, data: obj.data }));
   }
   if (isModifiedArray(obj.data)) {
     return e(tag, merge(append, { name, data: obj.data.filter(propEq('length', 2)) }));
@@ -65,6 +67,18 @@ export const diffNodeMapper = ({ Arrow, expanded, styles, name, data, onClick, s
   ]);
 };
 
+/**
+ * Re-implements ObjectLabel to render a prettier diff for primitive values
+ */
+export const diffObjectLabel = ({name, data, isNonenumerable}) => {
+  return span({}, [
+    e(ObjectName, {name, dimmed: isNonenumerable}),
+    span({}, ': '),
+    e(ObjectValue, { object: data.__old }),
+    span({}, ' \u2192 '),
+    e(ObjectValue, { object: data.__new })
+  ]);
+}
 
 export const formatDate = (ts) => {
   const date = new Date(ts);
