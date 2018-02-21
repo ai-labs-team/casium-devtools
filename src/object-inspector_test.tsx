@@ -9,30 +9,32 @@ const obj = {
   depth: 0,
   renderedNode: 'TestNode',
   data: {
-    __old: 1,
-    __new: 2
+    count: {
+      __old: 1,
+      __new: 2
+    }
   },
   styles: {}
 } as any;
 
 describe('nodeRenderer', () => {
-  context('when `obj` is a modified root object', () => {
+  context('when `obj` is a root object', () => {
     it('renders an ObjectName and ObjectPreview', () => {
       const wrapper = shallow(inspector.nodeRenderer(obj));
       expect(wrapper.find('ObjectName').prop('name')).to.equal('test');
-      expect(wrapper.find('ObjectPreview').prop('data')).to.equal(2);
+      expect(wrapper.find('ObjectPreview').prop('data')).to.deep.equal(obj.data);
     })
   });
 
-  context('when `obj` is a modified non-root object', () => {
+  context('when `obj` is a non-root object', () => {
     it('renders an ObjectName and ObjectValue', () => {
       const wrapper = shallow(inspector.nodeRenderer({ ...obj, depth: 1 }));
       expect(wrapper.find('ObjectName').prop('name')).to.equal('test');
-      expect(wrapper.find('ObjectValue').prop('object')).to.equal(2);
+      expect(wrapper.find('ObjectValue').prop('object')).to.deep.equal(obj.data);
     })
   });
 
-  context('when `obj` is a modified root array', () => {
+  context('when `obj` is a root array', () => {
     it('renders an ObjectName and ObjectPreview', () => {
       const data = [['+', 'one'], ['+', 'two']];
 
@@ -42,23 +44,22 @@ describe('nodeRenderer', () => {
     })
   });
 
-  context('when `obj` is any other type', () => {
-    it('renders an ObjectName and ObjectPreview', () => {
-      const data = {
-        test: 'value'
-      };
+  context('when `obj` contains a modified primitive value', () => {
+    it('renders a diff of old value -> new value', () => {
+      const wrapper = shallow(inspector.nodeRenderer({ ...obj, data: obj.data.count }));
 
-      const wrapper = shallow(inspector.nodeRenderer({ ...obj, data }));
+      expect(wrapper.text()).to.equal('<ObjectName />: <ObjectValue /> \u2192 <ObjectValue />');
       expect(wrapper.find('ObjectName').prop('name')).to.equal('test');
-      expect(wrapper.find('ObjectPreview').prop('data')).to.deep.equal(data);
-    });
-  })
+      expect(wrapper.find('ObjectValue').at(0).prop('object')).to.equal(1);
+      expect(wrapper.find('ObjectValue').at(1).prop('object')).to.equal(2);
+    })
+  });
 });
 
 describe('diffNodeMapper', () => {
   context('when `object` is a modified object', () => {
     it('renders a model diff', () => {
-      const wrapper = shallow(inspector.diffNodeMapper(obj));
+      const wrapper = shallow(inspector.diffNodeMapper({ ...obj, data: obj.data.count }));
       expect(wrapper.find('.model-diff.modified').exists()).to.equal(true);
     });
   });
