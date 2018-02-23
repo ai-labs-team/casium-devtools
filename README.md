@@ -1,20 +1,17 @@
 # Dev Tools for Casium – An application architecture for React
 
-## Installation
+## Installation & Development
+
+ - `yarn deps`
+ - `yarn build`, or `yarn watch`, to auto-reload on saved changes
 
  - Open [`chrome://extensions`](chrome://extensions)
  - Make sure `[✔] Developer Mode` is ✔'d
  - Click `Load unpacked extension...`
- - Select this directory
+ - Select the `dist` directory
  - If DevTools is open, close and reopen it
 
-## Development
-
- - Follow installation instructions
- - `yarn`
- - `yarn build`, or `yarn watch`, to auto-reload on saved changes
- - `cd node_modules/react-inspector; yarn; yarn build; cd ../..`
- - Open DevTools in separate window, navigate to `Architecture` tab
+ - Open DevTools in separate window, navigate to `Casium` tab
  - `⌘ + Opt + I` to initiate DevTools-ception
  - With Meta-DevTools window selected, `⌘ + R` to reload
  - You may need to also reload the inspected page
