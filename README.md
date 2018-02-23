@@ -1,20 +1,19 @@
 # Dev Tools for Casium – An application architecture for React
 
-## Installation
+[![CircleCI](https://circleci.com/gh/ai-labs-team/casium-devtools.svg?style=svg)](https://circleci.com/gh/ai-labs-team/casium-devtools) [![Maintainability](https://api.codeclimate.com/v1/badges/4b7cb6dab31383dcff91/maintainability)](https://codeclimate.com/github/ai-labs-team/casium-devtools/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/4b7cb6dab31383dcff91/test_coverage)](https://codeclimate.com/github/ai-labs-team/casium-devtools/test_coverage)
+
+## Installation & Development
+
+ - `yarn deps`
+ - `yarn build`, or `yarn watch`, to auto-reload on saved changes
 
  - Open [`chrome://extensions`](chrome://extensions)
  - Make sure `[✔] Developer Mode` is ✔'d
  - Click `Load unpacked extension...`
- - Select this directory
+ - Select the `dist` directory
  - If DevTools is open, close and reopen it
 
-## Development
-
- - Follow installation instructions
- - `yarn`
- - `yarn build`, or `yarn watch`, to auto-reload on saved changes
- - `cd node_modules/react-inspector; yarn; yarn build; cd ../..`
- - Open DevTools in separate window, navigate to `Architecture` tab
+ - Open DevTools in separate window, navigate to `Casium` tab
  - `⌘ + Opt + I` to initiate DevTools-ception
  - With Meta-DevTools window selected, `⌘ + R` to reload
  - You may need to also reload the inspected page

@@ -1,0 +1,88 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: warrenseymour/chrome-extension:latest
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          - v1-dependencies-
+
+      - run:
+          name: Install Dependencies
+          command: yarn deps
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run:
+          name: Prepare CodeClimate test reporter
+          command: cc-test-reporter before-build
+
+      - run:
+          name: Run Unit Tests
+          command: yarn unit-test
+
+      - run:
+          name: Publish CodeClimate coverage report
+          command: cc-test-reporter after-build --exit-code $?
+
+      - run:
+          name: Build
+          command: yarn build
+
+      - persist_to_workspace:
+          root: /root/project
+          paths:
+            - dist/*
+
+  publish:
+    docker:
+      - image: warrenseymour/chrome-extension:latest
+
+    steps:
+      - attach_workspace:
+          at: /root/workspace
+
+      - run:
+          name: Replace values in manifest.json
+          command: |
+            cd /root/workspace/dist
+            jq '.version = "$CIRCLE_TAG"' manifest.json | sponge manifest.json
+            jq 'del(.version_name)' manifest.json | sponge manifest.json
+            jq '.browser_action.default_icon = "icon.png"' manifest.json | sponge manifest.json
+
+      - run:
+          name: Package Extension
+          command: |
+            cd /root/workspace/dist
+            zip ../casium-devtools.zip *
+
+      - run:
+          name: Publish to Chrome Store
+          command: publish /root/workspace/casium-devtools.zip
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+
+      - publish:
+          requires:
+            - build
+
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
