@@ -45,6 +45,7 @@ jobs:
           command: |
             cd /root/workspace/dist
             jq '.version = "$CIRCLE_TAG"' manifest.json | sponge manifest.json
+            jq 'del(.version_name)' manifest.json | sponge manifest.json
             jq '.browser_action.default_icon = "icon.png"' manifest.json | sponge manifest.json
 
       - run:
