@@ -69,6 +69,7 @@ module.exports = {
     isProd ? null : new ChromeExtensionReloader(),
     isProd ? new UglifyJsPlugin() : null,
     extractSass,
+    new CopyWebpackPlugin([{ from: './src/*.png', flatten: true }]),
     new CopyWebpackPlugin([{ from: './src/manifest.json', flatten: true }]),
     new CopyWebpackPlugin([{ from: './src/devtools.html', flatten: true }]),
     new CopyWebpackPlugin([{ from: './src/panel.html', flatten: true }]),

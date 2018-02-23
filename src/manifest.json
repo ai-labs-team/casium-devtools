@@ -1,8 +1,12 @@
 {
   "name": "Casium DevTools",
-  "version": "0.1",
+  "version": "0.0.0",
+  "version_name": "dev-version",
   "description": "DevTools extension for debugging Casium state and messages",
   "devtools_page": "devtools.html",
+  "browser_action": {
+    "default_icon": "icon-dev.png"
+  },
   "background": {
     "scripts": [
       "background.js"
