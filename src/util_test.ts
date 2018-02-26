@@ -86,13 +86,13 @@ describe('isModifiedArray', () => {
     diff: [[], []],
     result: false
   }, {
-    diff: [[' ']],
+    diff: [[' ', 'unchangedElement'], ['+', 'addedElement']],
     result: true
   }, {
-    diff: [['+', ' ']],
+    diff: [['+', 'addedElement']],
     result: true
   }, {
-    diff: [['-', ' ']],
+    diff: [['-', 'deletedElement']],
     result: true
   }];
 

@@ -1,22 +1,25 @@
 .model-diff {
-    &.modified-key {
-        .object-name {
-            font-weight: bold;
-            color: #e0bb26 !important;
+    &.added-key.mapped-node-preview-container,
+    &.added-element > li > .mapped-node > .mapped-node-preview-container,
+    &.added-key > li > .mapped-node > .mapped-node-preview-container {
+        & > span:nth-of-type(2) {
+            .object-name {
+                font-weight: bold;
+                color: green !important;
+            }
         }
     }
 
-    &.added-key {
-        .object-name {
-            font-weight: bold;
-            color: green !important;
-        }
-    }
+    &.deleted-key.mapped-node-preview-container,
+    &.deleted-element > li > .mapped-node > .mapped-node-preview-container,
+    &.deleted-key > li > .mapped-node > .mapped-node-preview-container {
+        & > span:nth-of-type(2) {
+            text-decoration: line-through;
 
-    &.deleted-key {
-        .object-name {
-            font-weight: bold;
-            color: red !important;
+            .object-name {
+                font-weight: bold;
+                color: red !important;
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { expect } from 'chai';
 import { shallow } from 'enzyme';
 
@@ -16,6 +17,10 @@ const obj = {
   },
   styles: {}
 } as any;
+
+const NodeStub: React.StatelessComponent<{ data?: any, id: string }> = ({ id }) => (
+  <div id={id} />
+);
 
 describe('nodeRenderer', () => {
   context('when `obj` is a root object', () => {
@@ -43,24 +48,58 @@ describe('nodeRenderer', () => {
       expect(wrapper.find('ObjectPreview').prop('data')).to.deep.equal(data);
     })
   });
-
-  context('when `obj` contains a modified primitive value', () => {
-    it('renders a diff of old value -> new value', () => {
-      const wrapper = shallow(inspector.nodeRenderer({ ...obj, data: obj.data.count }));
-
-      expect(wrapper.text()).to.equal('<ObjectName />: <ObjectValue /> \u2192 <ObjectValue />');
-      expect(wrapper.find('ObjectName').prop('name')).to.equal('test');
-      expect(wrapper.find('ObjectValue').at(0).prop('object')).to.equal(1);
-      expect(wrapper.find('ObjectValue').at(1).prop('object')).to.equal(2);
-    })
-  });
 });
 
 describe('diffNodeMapper', () => {
   context('when `object` is a modified object', () => {
-    it('renders a model diff', () => {
-      const wrapper = shallow(inspector.diffNodeMapper({ ...obj, data: obj.data.count }));
-      expect(wrapper.find('.model-diff.modified').exists()).to.equal(true);
+    it('renders the `old` and `new` nodes directly, changing the `name` prop', () => {
+      const wrapper = shallow(inspector.diffNodeMapper({
+        ...obj,
+        data: obj.data.count,
+        childNodes: [
+          <NodeStub id="oldNode" />,
+          <NodeStub id="newNode" />
+        ]
+      }));
+      expect(wrapper.find('#oldNode').prop('name')).to.equal('test');
+      expect(wrapper.find('#newNode').prop('name')).to.equal('test');
+    });
+  });
+
+  context('when `object` is a modified array', () => {
+    it('renders added and deleted array elements', () => {
+      const wrapper = shallow(inspector.diffNodeMapper({
+        ...obj,
+        data: [
+          ['+', 4],
+          [' ', 8],
+          ['-', 15]
+        ],
+        childNodes: [
+          <NodeStub id="node0" data={['+', 4]} />,
+          <NodeStub id="node1" data={[' ', 8]} />,
+          <NodeStub id="node2" data={['-', 15]} />
+        ]
+      }));
+
+      const node0 = wrapper.find('#node0');
+      expect(node0.parent().prop('className')).to.equal('model-diff added added-element');
+      expect(node0.props()).to.deep.equal({
+        id: 'node0',
+        name: '0',
+        data: 4,
+      });
+
+      const node1 = wrapper.find('#node1');
+      expect(node1.exists()).to.equal(false);
+
+      const node2 = wrapper.find('#node2');
+      expect(node2.parent().prop('className')).to.equal('model-diff deleted deleted-element');
+      expect(node2.props()).to.deep.equal({
+        id: 'node2',
+        name: '2',
+        data: 15,
+      });
     });
   });
 
