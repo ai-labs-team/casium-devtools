@@ -1,19 +1,16 @@
 .model-diff {
-    &.modified-key {
-        .object-name {
-            font-weight: bold;
-            color: #e0bb26 !important;
-        }
-    }
-
-    &.added-key {
+    &.added-key.mapped-node-preview-container > span:nth-of-type(2),
+    &.added-key > li > .mapped-node > .mapped-node-preview-container > span:nth-of-type(2) {
         .object-name {
             font-weight: bold;
             color: green !important;
         }
     }
 
-    &.deleted-key {
+    &.deleted-key.mapped-node-preview-container > span:nth-of-type(2),
+    &.deleted-key > li > .mapped-node > .mapped-node-preview-container > span:nth-of-type(2) {
+        text-decoration: line-through;
+
         .object-name {
             font-weight: bold;
             color: red !important;

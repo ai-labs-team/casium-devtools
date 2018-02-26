@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { expect } from 'chai';
 import { shallow } from 'enzyme';
 
@@ -8,6 +9,10 @@ const obj = {
   name: 'test',
   depth: 0,
   renderedNode: 'TestNode',
+  childNodes: [
+    <div id="oldNode" />,
+    <div id="newNode" />
+  ],
   data: {
     count: {
       __old: 1,
@@ -43,24 +48,14 @@ describe('nodeRenderer', () => {
       expect(wrapper.find('ObjectPreview').prop('data')).to.deep.equal(data);
     })
   });
-
-  context('when `obj` contains a modified primitive value', () => {
-    it('renders a diff of old value -> new value', () => {
-      const wrapper = shallow(inspector.nodeRenderer({ ...obj, data: obj.data.count }));
-
-      expect(wrapper.text()).to.equal('<ObjectName />: <ObjectValue /> \u2192 <ObjectValue />');
-      expect(wrapper.find('ObjectName').prop('name')).to.equal('test');
-      expect(wrapper.find('ObjectValue').at(0).prop('object')).to.equal(1);
-      expect(wrapper.find('ObjectValue').at(1).prop('object')).to.equal(2);
-    })
-  });
 });
 
 describe('diffNodeMapper', () => {
   context('when `object` is a modified object', () => {
-    it('renders a model diff', () => {
+    it('renders the `old` and `new` nodes directly, changing the `name` prop', () => {
       const wrapper = shallow(inspector.diffNodeMapper({ ...obj, data: obj.data.count }));
-      expect(wrapper.find('.model-diff.modified').exists()).to.equal(true);
+      expect(wrapper.find('#oldNode').prop('name')).to.equal('test');
+      expect(wrapper.find('#newNode').prop('name')).to.equal('test');
     });
   });
 

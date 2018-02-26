@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as copy from 'copy-to-clipboard';
 import { both, flip, identity, keys, map, merge, pipe, propEq, replace, values, when, zipObj } from 'ramda';
-import { NodeRenderer, NodeMapper, ObjectRootLabel, ObjectLabel, ObjectName, ObjectValue } from 'react-inspector';
+import { NodeRenderer, NodeMapper, ObjectRootLabel, ObjectLabel } from 'react-inspector';
 
 import { isModifiedObject, isModifiedArray, typeOf } from './util';
 
@@ -28,7 +28,7 @@ export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
   );
 
   if (isModifiedObject(obj.data)) {
-    return <DiffObjectLabel {...append({ name, data: obj.data }) } />
+    return <Label {...append({ name, data: obj.data })} />
   }
 
   if (isModifiedArray(obj.data)) {
@@ -49,31 +49,19 @@ export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
   return <Label {...props} />;
 }
 
-const DiffObjectLabel: NodeRenderer<ObjectDiffNode> = ({ name, isNonenumerable, data }) => (
-  <span>
-    <ObjectName name={name} dimmed={isNonenumerable} />
-    <span>: </span>
-    <ObjectValue object={data.__old} />
-    <span>{' \u2192 '}</span>
-    <ObjectValue object={data.__new} />
-  </span>
-);
-
 export const diffNodeMapper: NodeMapper<ObjectDiffNode> = node => {
-  let { styles, name, data, onClick, shouldShowPlaceholder, renderedNode } = node;
+  let { data, childNodes, name, shouldShowPlaceholder } = node;
 
   if (isModifiedObject(data)) {
-    const placeholder = shouldShowPlaceholder || true ? (
-      <span style={styles.treeNodePlaceholder}>
-        {PLACEHOLDER}
-      </span>
-    ) : null;
+    const [oldNode, newNode] = childNodes;
 
     return (
-      <div className="model-diff modified modified-key">
-        <div onClick={onClick}>
-          {placeholder}
-          {renderedNode}
+      <div>
+        <div className="model-diff deleted deleted-key">
+          {React.cloneElement(oldNode, { name })}
+        </div>
+        <div className="model-diff added added-key">
+          {React.cloneElement(newNode, { name })}
         </div>
       </div>
     );
