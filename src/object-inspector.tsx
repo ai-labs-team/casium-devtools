@@ -49,22 +49,63 @@ export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
   return <Label {...props} />;
 }
 
-export const diffNodeMapper: NodeMapper<ObjectDiffNode> = node => {
-  let { data, childNodes, name, shouldShowPlaceholder } = node;
+export const modifiedObjectNodeMapper: NodeMapper<ObjectDiffNode> = ({ name, childNodes: [oldNode, newNode] }) => (
+  <div>
+    <div className="model-diff deleted deleted-key">
+      {React.cloneElement(oldNode, { name })}
+    </div>
+    <div className="model-diff added added-key">
+      {React.cloneElement(newNode, { name })}
+    </div>
+  </div>
+);
 
-  if (isModifiedObject(data)) {
-    const [oldNode, newNode] = childNodes;
+export const modifiedArrayChildren = (childNodes: React.ReactElement<{ name: string, className: string, data: any }>[] = []) => {
+  let index = 0;
+
+  return childNodes.map((childNode) => {
+    const [op, data] = childNode.props.data;
+    let className = 'model-diff';
+
+    if (op === ' ') {
+      index += 1;
+      return;
+    }
+
+    if (op === '-') {
+      className += ' deleted deleted-element';
+    } else if (op === '+') {
+      className += ' added added-element';
+    }
+
+    const child = React.cloneElement(childNode, {
+      name: index + '',
+      data
+    });
+
+    if (op === '+') {
+      index += 1;
+    }
 
     return (
-      <div>
-        <div className="model-diff deleted deleted-key">
-          {React.cloneElement(oldNode, { name })}
-        </div>
-        <div className="model-diff added added-key">
-          {React.cloneElement(newNode, { name })}
-        </div>
+      <div className={className}>
+        {child}
       </div>
     );
+  })
+}
+
+export const diffNodeMapper: NodeMapper<ObjectDiffNode> = node => {
+  let { data, name, shouldShowPlaceholder } = node;
+
+  if (isModifiedObject(data)) {
+    return modifiedObjectNodeMapper(node);
+  }
+
+  if (isModifiedArray(data)) {
+    return nodeMapper(merge(node, {
+      childNodes: modifiedArrayChildren(node.childNodes)
+    }));
   }
 
   let className = '';

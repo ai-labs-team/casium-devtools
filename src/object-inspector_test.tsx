@@ -9,10 +9,6 @@ const obj = {
   name: 'test',
   depth: 0,
   renderedNode: 'TestNode',
-  childNodes: [
-    <div id="oldNode" />,
-    <div id="newNode" />
-  ],
   data: {
     count: {
       __old: 1,
@@ -21,6 +17,10 @@ const obj = {
   },
   styles: {}
 } as any;
+
+const NodeStub: React.StatelessComponent<{ data?: any, id: string }> = ({ id }) => (
+  <div id={id} />
+);
 
 describe('nodeRenderer', () => {
   context('when `obj` is a root object', () => {
@@ -53,9 +53,53 @@ describe('nodeRenderer', () => {
 describe('diffNodeMapper', () => {
   context('when `object` is a modified object', () => {
     it('renders the `old` and `new` nodes directly, changing the `name` prop', () => {
-      const wrapper = shallow(inspector.diffNodeMapper({ ...obj, data: obj.data.count }));
+      const wrapper = shallow(inspector.diffNodeMapper({
+        ...obj,
+        data: obj.data.count,
+        childNodes: [
+          <NodeStub id="oldNode" />,
+          <NodeStub id="newNode" />
+        ]
+      }));
       expect(wrapper.find('#oldNode').prop('name')).to.equal('test');
       expect(wrapper.find('#newNode').prop('name')).to.equal('test');
+    });
+  });
+
+  context('when `object` is a modified array', () => {
+    it('renders added and deleted array elements', () => {
+      const wrapper = shallow(inspector.diffNodeMapper({
+        ...obj,
+        data: [
+          ['+', 4],
+          [' ', 8],
+          ['-', 15]
+        ],
+        childNodes: [
+          <NodeStub id="node0" data={['+', 4]} />,
+          <NodeStub id="node1" data={[' ', 8]} />,
+          <NodeStub id="node2" data={['-', 15]} />
+        ]
+      }));
+
+      const node0 = wrapper.find('#node0');
+      expect(node0.parent().prop('className')).to.equal('model-diff added added-element');
+      expect(node0.props()).to.deep.equal({
+        id: 'node0',
+        name: '0',
+        data: 4,
+      });
+
+      const node1 = wrapper.find('#node1');
+      expect(node1.exists()).to.equal(false);
+
+      const node2 = wrapper.find('#node2');
+      expect(node2.parent().prop('className')).to.equal('model-diff deleted deleted-element');
+      expect(node2.props()).to.deep.equal({
+        id: 'node2',
+        name: '2',
+        data: 15,
+      });
     });
   });
 

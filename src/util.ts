@@ -47,8 +47,7 @@ export const isModifiedArray = both(
   pipe(
     map((val: any[]) => {
       return (typeOf(val) === 'array' && (
-        val.length === 2 && ['-', '+', '~'].includes(val[0]) ||
-        val.length === 1 && val[0] === ' '
+        val.length === 2 && ['-', '+', '~', ' '].includes(val[0])
       ));
     }),
     reduce<boolean, boolean>(and, true)
