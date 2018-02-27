@@ -53,7 +53,7 @@ html, body {
 }
 .panel-label {
   color: rgb(97, 97, 97);
-  font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", sans-serif;
+  font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", Ubuntu, Arial, sans-serif;
   font-size: 12px;
   font-weight: bold;
 }
@@ -66,7 +66,10 @@ html, body {
   padding: 10px 15px;
   cursor: default;
   user-select: none;
+  font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", Ubuntu, Arial, sans-serif;
+  font-size: 12px;
 }
+
 .panel-item.selected {
   color: white;
   background: rgb(56, 121, 217);
@@ -75,22 +78,25 @@ html, body {
 .panel-tools {
   border-bottom: 1px solid lightgray;
   background: rgb(243, 243, 243);
-  height: 20px;
+  height: 25px;
+  vertical-align: top;
 }
 
 .panel-tools-right {
-  position: relative;
   display: inline-block;
-  top: -6px;
-  padding-left: 7px;
+  padding-left: 1px;
+  vertical-align: top;
 }
 
 .tool-button {
-  display: block;
-  float: left;
+  display: inline-block;
   background: rgb(243, 243, 243);
   cursor: pointer;
-  padding: 4px 6px;
+  width: 25px;
+  height: 25px;
+  line-height: 25px;
+  font-size: 12px;
+  text-align: center;
 }
 
 .tool-button:hover {
@@ -102,15 +108,33 @@ html, body {
 }
 
 .button-group {
+  display: inline-block;
   border-radius: 5px;
   border: 1px solid lightgray;
+  height: 21px;
+  margin-top: 1px;
 }
 
 .button-group button {
+  cursor: pointer;
+  font-size: 12px;
+  height: 21px;
+  vertical-align: middle;
+  width: 35px;
   font-weight: bold;
   border: 0;
   background: transparent;
   outline: 0;
+  color: black;
+  border-right: 1px solid lightgray;
+
+  &:hover {
+    background: lighten(lightgray, 10%);
+  }
+
+  &::-moz-focus-inner {
+    border: 0;
+  }
 }
 
 .button-group button.first {
@@ -118,8 +142,6 @@ html, body {
   border-bottom-left-radius: 5px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
-
-  border-right: 1px solid lightgray;
 }
 
 .button-group button.last {
@@ -128,11 +150,11 @@ html, body {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 
-  border-left: 1px solid lightgray;
+  border-right: none;
 }
 
 .button-group button:active, .button-group button.selected {
-  background: lightgray;
+  background: lighten(lightgray, 5%);
 }
 
 .unit-test-content {
