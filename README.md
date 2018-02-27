@@ -7,6 +7,8 @@
  - `yarn deps`
  - `yarn build`, or `yarn watch`, to auto-reload on saved changes
 
+### Chrome
+
  - Open [`chrome://extensions`](chrome://extensions)
  - Make sure `[✔] Developer Mode` is ✔'d
  - Click `Load unpacked extension...`
@@ -17,6 +19,17 @@
  - `⌘ + Opt + I` to initiate DevTools-ception
  - With Meta-DevTools window selected, `⌘ + R` to reload
  - You may need to also reload the inspected page
+
+### Firefox
+
+- Open [`about:debugging`](about:debugging)
+- Make sure `[✔] Enable add-on debugging` is ✔'d
+- Click `Load Temporary Add-on`
+- Select the `dist` directory
+- If the Inspector is open, close and reopen it
+
+- In the entry that appears for 'Casium Developer Tools', click the `Debug` button
+- Accept the remote debugging request
 
 ## Roadmap
 
