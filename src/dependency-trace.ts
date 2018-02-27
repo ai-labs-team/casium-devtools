@@ -113,7 +113,7 @@ export const runDependencyTrace = (msg: SerializedMessage) => {
     `${JSON.stringify(msg.prev)} ,` +
     `${JSON.stringify(msg.data)} ,` +
     `${JSON.stringify(msg.relay)})` +
-    `//@ sourceURL=casium-devtools/run-dependency-trace.js`;
+    `//# sourceURL=casium-devtools/run-dependency-trace.js`;
 
   return new Promise<DependencyTrace>((resolve, reject) => {
     chrome.devtools.inspectedWindow.eval(evalString, (result: DependencyTrace, error) => {

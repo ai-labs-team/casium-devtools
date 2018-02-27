@@ -12,4 +12,16 @@
             padding-left: 10px;
         }
     }
+
+    // Ensures that object inspectors render nicely on off-white backgrounds
+    li {
+        background: transparent !important;
+    }
+
+    .diff-state {
+        em {
+            font-family: ".SFNSDisplay-Regular", "Helvetica Neue", "Lucida Grande", Ubuntu, Arial, sans-serif;
+            font-size: 12px;
+        }
+    }
 }

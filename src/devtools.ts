@@ -16,7 +16,7 @@ const createPanelIfCasiumLoaded = () => {
 
     clearInterval(loadCheckInterval);
     panelCreated = true;
-    chrome.devtools.panels.create('Casium', '', 'panel.html', () => { });
+    chrome.devtools.panels.create('Casium', 'icon.png', 'panel.html', () => { });
   });
 }
 

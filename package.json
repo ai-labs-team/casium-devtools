@@ -23,7 +23,8 @@
     "react-dom": "^15.6.1",
     "react-fontawesome": "^1.6.1",
     "react-inspector": "nateabele/react-inspector#master",
-    "title-case": "^2.1.1"
+    "title-case": "^2.1.1",
+    "webextension-polyfill": "^0.2.1"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",
@@ -59,6 +60,7 @@
     "typescript": "^2.7.1",
     "uglifyjs-webpack-plugin": "^1.2.0",
     "url-loader": "^0.6.2",
+    "web-ext-types": "^2.0.1",
     "webpack": "^3.5.5",
     "webpack-chrome-extension-reloader": "^0.7.0"
   },

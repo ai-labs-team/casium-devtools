@@ -42,7 +42,7 @@ export type Listener = (msg: SerializedMessage) => any;
   const processMsg = (msg: SerializedMessage) =>
     ([predicate, ...listeners]: Listener[]) => predicate(msg) && listeners.map(l => l(msg));
 
-  const backgroundPageConnection = chrome.runtime.connect({ name: 'CasiumDevToolsPanel' });
+  const backgroundPageConnection = browser.runtime.connect(undefined, { name: 'CasiumDevToolsPanel' });
 
   backgroundPageConnection.onMessage.addListener((message: any) => {
     window.LISTENERS.length ? window.LISTENERS.forEach(processMsg(message)) : queue.push(message);
@@ -51,7 +51,7 @@ export type Listener = (msg: SerializedMessage) => any;
   window.messageClient = (data) => {
     backgroundPageConnection.postMessage(Object.assign({
       from: "CasiumDevToolsPanel",
-      tabId: chrome.devtools.inspectedWindow.tabId,
+      tabId: browser.devtools.inspectedWindow.tabId,
     }, data));
   }
 

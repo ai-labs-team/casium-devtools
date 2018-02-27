@@ -3,20 +3,24 @@
   "short_name": "Casium DevTools",
   "version": "0.0.0",
   "version_name": "dev-version",
-  "description": "A Chrome Developer Tools extension for debugging Casium state and messages",
+  "description": "A Developer Tools extension for debugging Casium state and messages.",
   "devtools_page": "devtools.html",
   "browser_action": {
     "default_icon": "icon-dev.png"
   },
   "background": {
     "scripts": [
+      "browser-polyfill.min.js",
       "background.js"
     ]
   },
   "content_scripts": [{
     "matches": ["http://*/*", "https://*/*"],
     "css": [],
-    "js": ["content-script.js"],
+    "js": [
+      "browser-polyfill.min.js",
+      "content-script.js"
+    ],
     "all_frames": true,
     "run_at": "document_idle"
   }],
