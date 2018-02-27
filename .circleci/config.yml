@@ -71,6 +71,7 @@ jobs:
       - run:
           name: Publish to AMO
           command: |
+            AMO_ID=eed25b73-3db7-4776-b7e8-bc3133a8ec5e
             JWT_NONCE=`dd if=/dev/urandom bs=20 count=1 2>/dev/null | openssl sha1`
             CURRENT_TIMESTAMP=`date +%s`
             JWT_HEADER=`printf %s {\"alg\": \"HS256\", \"typ\": \"JWT\"} | base64 | tr -d '\n'`
@@ -78,7 +79,7 @@ jobs:
             JWT_SIGNATURE=`printf %s $JWT_HEADER.$JWT_PAYLOAD | openssl dgst -binary -sha256 -hmac $AMO_JWT_SECRET | base64 | tr -d '\n'`
             JWT=$JWT_HEADER.$JWT_PAYLOAD.$JWT_SIGNATURE
 
-            curl "https://addons.mozilla.org/api/v3/addons/@casium-developer-tools/versions/$CIRCLE_TAG/" -g -XPOST -F "upload=@/root/workspace/casium-devtools.zip" -H "Authorization: JWT $JWT"
+            curl "https://addons.mozilla.org/api/v3/addons/{$AMO_ID}/versions/$CIRCLE_TAG/" -g -XPUT -F "upload=@/root/workspace/casium-devtools.zip" -H "Authorization: JWT $JWT"
 
 workflows:
   version: 2
