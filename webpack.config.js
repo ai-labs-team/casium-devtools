@@ -66,12 +66,16 @@ module.exports = {
   },
 
   plugins: [
+    extractSass,
     isProd ? null : new ChromeExtensionReloader(),
     isProd ? new UglifyJsPlugin() : null,
-    extractSass,
-    new CopyWebpackPlugin([{ from: './src/*.png', flatten: true }]),
-    new CopyWebpackPlugin([{ from: './src/manifest.json', flatten: true }]),
-    new CopyWebpackPlugin([{ from: './src/devtools.html', flatten: true }]),
-    new CopyWebpackPlugin([{ from: './src/panel.html', flatten: true }]),
+    isProd ? null : new CopyWebpackPlugin([{ from: './node_modules/webextension-polyfill/dist/browser-polyfill.min.js.map', flatten: true }]),
+    new CopyWebpackPlugin([
+      { from: './src/*.png', flatten: true },
+      { from: './node_modules/webextension-polyfill/dist/browser-polyfill.min.js', flatten: true },
+      { from: './src/manifest.json', flatten: true },
+      { from: './src/devtools.html', flatten: true },
+      { from: './src/panel.html', flatten: true },
+    ]),
   ].filter(plugin => !!plugin)
 };

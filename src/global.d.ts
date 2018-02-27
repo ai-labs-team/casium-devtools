@@ -27,18 +27,4 @@ declare global {
       }
     }
   }
-
-  // @types/chrome does not define `chrome.extension.connect()` or `chrome.extension.onConnect`
-  declare namespace chrome.extension {
-    declare var onConnect: typeof runtime.onConnect;
-    declare var onMessage: typeof runtime.onMessage;
-
-    export function connect(options: {}): {
-      onMessage: {
-        addListener(listener: (msg: any, sender: any) => void);
-      },
-
-      postMessage(options: {}, channels: string): void;
-    };
-  }
 }

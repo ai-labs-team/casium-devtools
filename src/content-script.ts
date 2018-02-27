@@ -1,18 +1,17 @@
 // Executes on client page load
 (() => {
-  const port = chrome.extension.connect({ name: 'CasiumDevToolsPageScript' });
+  const port = browser.runtime.connect(undefined, { name: 'CasiumDevToolsPageScript' });
   const seen: string[] = [];
 
   // Get messages from background script
-  port.onMessage.addListener(function(msg, sender) {
-    // console.log("message to page script from " + sender.name, msg);
+  port.onMessage.addListener(function(msg) {
     window.postMessage(msg, '*');
   });
 
   port.postMessage({
     from: 'CasiumDevToolsPageScript',
     state: 'initialized'
-  }, "*");
+  });
 
   window.addEventListener('message', function(message) {
     if (!message || !message.data || !message.data.id || message.data.from === 'CasiumDevToolsPageScript') {
@@ -26,7 +25,7 @@
     }
 
     try {
-      port.postMessage(message.data, '*');
+      port.postMessage(message.data);
     } catch (e) {
       // Probably a cached version of this script trying to talk to a version of the extension
       // that no longer exists

@@ -10,13 +10,17 @@
   },
   "background": {
     "scripts": [
+      "browser-polyfill.min.js",
       "background.js"
     ]
   },
   "content_scripts": [{
     "matches": ["http://*/*", "https://*/*"],
     "css": [],
-    "js": ["content-script.js"],
+    "js": [
+      "browser-polyfill.min.js",
+      "content-script.js"
+    ],
     "all_frames": true,
     "run_at": "document_idle"
   }],
