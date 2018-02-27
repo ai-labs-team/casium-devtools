@@ -1,6 +1,6 @@
 # Dev Tools for Casium – An application architecture for React
 
-[![CircleCI](https://circleci.com/gh/ai-labs-team/casium-devtools.svg?style=svg)](https://circleci.com/gh/ai-labs-team/casium-devtools) [![Maintainability](https://api.codeclimate.com/v1/badges/4b7cb6dab31383dcff91/maintainability)](https://codeclimate.com/github/ai-labs-team/casium-devtools/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/4b7cb6dab31383dcff91/test_coverage)](https://codeclimate.com/github/ai-labs-team/casium-devtools/test_coverage)
+[![CircleCI](https://circleci.com/gh/ai-labs-team/casium-devtools.svg?style=svg)](https://circleci.com/gh/ai-labs-team/casium-devtools) [![Maintainability](https://api.codeclimate.com/v1/badges/d5e484d903bccb6175c1/maintainability)](https://codeclimate.com/github/ai-labs-team/casium-devtools/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/d5e484d903bccb6175c1/test_coverage)](https://codeclimate.com/github/ai-labs-team/casium-devtools/test_coverage)
 
 ## Installation & Development
 

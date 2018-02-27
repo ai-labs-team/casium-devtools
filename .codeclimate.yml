@@ -1,0 +1,4 @@
+exclude_patterns:
+  - "**/*.d.ts"
+  - "**/*_test.ts"
+  - "**/*_test.tsx"
