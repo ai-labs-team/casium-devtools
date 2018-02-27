@@ -54,7 +54,7 @@ jobs:
           name: Replace values in manifest.json
           command: |
             cd /root/workspace/dist
-            jq '.version = "$CIRCLE_TAG"' manifest.json | sponge manifest.json
+            jq ".version = \"$CIRCLE_TAG\"" manifest.json | sponge manifest.json
             jq 'del(.version_name)' manifest.json | sponge manifest.json
             jq '.browser_action.default_icon = "icon.png"' manifest.json | sponge manifest.json
 
@@ -75,7 +75,7 @@ jobs:
             CURRENT_TIMESTAMP=`date +%s`
             JWT_HEADER=`printf %s {\"alg\": \"HS256\", \"typ\": \"JWT\"} | base64`
             JWT_PAYLOAD=`printf %s {\"iss\": \"$AMO_JWT_ISSUER\", \"jti\": \"$JWT_NONCE\", \"iat\": $CURRENT_TIMESTAMP, \"exp\": $(($CURRENT_TIMESTAMP + (5 * 60)))} | base64`
-            JWT_SIGNATURE=`printf %s $JWT_HEADER.$JWT_PAYLOAD | openssl dgst -binary -sha256 -hmac $AMO_SECRET | base64`
+            JWT_SIGNATURE=`printf %s $JWT_HEADER.$JWT_PAYLOAD | openssl dgst -binary -sha256 -hmac $AMO_JWT_SECRET | base64`
             JWT=$JWT_HEADER.$JWT_PAYLOAD.$JWT_SIGNATURE
 
             curl "https://addons.mozilla.org/api/v3/addons/@casium-developer-tools/versions/$CIRCLE_TAG" -g -XPOST -F "upload=@/root/workspace/casium-devtools.zip" -H "Authorization: JWT $JWT"
