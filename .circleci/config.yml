@@ -73,9 +73,9 @@ jobs:
           command: |
             JWT_NONCE=`dd if=/dev/urandom bs=20 count=1 2>/dev/null | openssl sha1`
             CURRENT_TIMESTAMP=`date +%s`
-            JWT_HEADER=`printf %s {\"alg\": \"HS256\", \"typ\": \"JWT\"} | base64`
-            JWT_PAYLOAD=`printf %s {\"iss\": \"$AMO_JWT_ISSUER\", \"jti\": \"$JWT_NONCE\", \"iat\": $CURRENT_TIMESTAMP, \"exp\": $(($CURRENT_TIMESTAMP + (5 * 60)))} | base64`
-            JWT_SIGNATURE=`printf %s $JWT_HEADER.$JWT_PAYLOAD | openssl dgst -binary -sha256 -hmac $AMO_JWT_SECRET | base64`
+            JWT_HEADER=`printf %s {\"alg\": \"HS256\", \"typ\": \"JWT\"} | base64 | tr -d '\n'`
+            JWT_PAYLOAD=`printf %s {\"iss\": \"$AMO_JWT_ISSUER\", \"jti\": \"$JWT_NONCE\", \"iat\": $CURRENT_TIMESTAMP, \"exp\": $(($CURRENT_TIMESTAMP + (5 * 60)))} | base64 | tr -d '\n'`
+            JWT_SIGNATURE=`printf %s $JWT_HEADER.$JWT_PAYLOAD | openssl dgst -binary -sha256 -hmac $AMO_JWT_SECRET | base64 | tr -d '\n'`
             JWT=$JWT_HEADER.$JWT_PAYLOAD.$JWT_SIGNATURE
 
             curl "https://addons.mozilla.org/api/v3/addons/@casium-developer-tools/versions/$CIRCLE_TAG/" -g -XPOST -F "upload=@/root/workspace/casium-devtools.zip" -H "Authorization: JWT $JWT"
