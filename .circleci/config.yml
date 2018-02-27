@@ -78,7 +78,7 @@ jobs:
             JWT_SIGNATURE=`printf %s $JWT_HEADER.$JWT_PAYLOAD | openssl dgst -binary -sha256 -hmac $AMO_JWT_SECRET | base64`
             JWT=$JWT_HEADER.$JWT_PAYLOAD.$JWT_SIGNATURE
 
-            curl "https://addons.mozilla.org/api/v3/addons/@casium-developer-tools/versions/$CIRCLE_TAG" -g -XPOST -F "upload=@/root/workspace/casium-devtools.zip" -H "Authorization: JWT $JWT"
+            curl "https://addons.mozilla.org/api/v3/addons/@casium-developer-tools/versions/$CIRCLE_TAG/" -g -XPOST -F "upload=@/root/workspace/casium-devtools.zip" -H "Authorization: JWT $JWT"
 
 workflows:
   version: 2
