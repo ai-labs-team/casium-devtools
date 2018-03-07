@@ -64,7 +64,7 @@ const messageNames = (pairs: MessageTracePair[]) =>
     }, '');
 
 const dispatchArg = ([msg, trace]: MessageTracePair) =>
-  `new ${msg.message}(${toJsVal(trace ? deepPick(msg.data, trace.message) : msg.data)})`;
+  `new ${msg.message}(${toJsVal(trace ? deepPick(msg.data || {}, trace.message) : msg.data)})`;
 
 const hasCommand = ([msg]: MessageTracePair) =>
   !!(msg.commands && msg.commands.length);

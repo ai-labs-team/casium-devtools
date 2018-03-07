@@ -20,7 +20,7 @@ export interface SerializedMessage {
   from: string;
   relay: any;
   message: string;
-  data: any;
+  data: {} | null;
   path: string[];
   commands?: Command[];
 }
