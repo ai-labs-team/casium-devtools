@@ -89,7 +89,7 @@ export class MessageView extends React.Component<Props, State> {
     const items = selected.map((msg, index) => {
       const dependencyTrace = dependencyTraces[index];
       const relay = (useDependencyTrace && dependencyTrace) ? deepPick(msg.relay, dependencyTrace.relay) : msg.relay;
-      const data = (useDependencyTrace && dependencyTrace) ? deepPick(msg.data, dependencyTrace.message) : msg.data;
+      const data = (useDependencyTrace && dependencyTrace) ? deepPick(msg.data || {}, dependencyTrace.message) : msg.data || {};
 
       const relayItem = Object.keys(relay).length > 0 ? [
         <div className="panel-label">Relay</div>,
@@ -209,8 +209,11 @@ export class MessageView extends React.Component<Props, State> {
     return traces
       .then(dependencyTraces => {
         this.setState({ dependencyTraces });
-
         return dependencyTraces;
+      })
+      .catch(err => {
+        console.error('Failed to load dependency trace for selected messages', err);
+        return [];
       });
   }
 
