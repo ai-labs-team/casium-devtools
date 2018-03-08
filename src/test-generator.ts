@@ -1,5 +1,5 @@
 import * as hjson from 'hjson';
-import { any, head, keys, last, lensPath, set } from 'ramda';
+import { any, concat, head, keys, last, lensPath, mergeWith, pipe, set, uniq } from 'ramda';
 
 import { SerializedMessage, Command } from './messaging';
 import { DependencyTrace } from './dependency-trace';
@@ -104,26 +104,43 @@ const expectCommands = (pairs: MessageTracePair[]) => {
   ] : [];
 }
 
+const mergeUniquePaths = mergeWith(pipe(concat, uniq as any));
+
 export const generateUnitTest = (messages: SerializedMessage[], traces: DependencyTrace[]) => {
+  const aggregateTrace = traces.length ? traces.reduce(mergeUniquePaths, {
+    model: [],
+    relay: [],
+    message: []
+  } as DependencyTrace) : undefined;
+
   const pairs = messages.map((message, index) => ([message, traces[index]])) as MessageTracePair[];
 
-  const [firstMsg, firstTrace] = head(pairs) as MessageTracePair;
+  const [firstMsg] = head(pairs) as MessageTracePair;
   const [lastMsg] = last(pairs) as MessageTracePair;
 
-  const relayArg = keys(firstMsg.relay).length ?
-    `, ${toJsVal({ relay: firstTrace ? deepPick(firstMsg.relay, firstTrace.relay) : firstMsg.relay })}` : '';
+  /**
+   * When there is no dependency trace available for relay properties accessed,
+   * then use the presence of relay data in the first message to determine if it
+   * should be displayed.
+   */
+  const relayArg = keys(firstMsg.relay).length > 0 && (!aggregateTrace || aggregateTrace.relay.length) ?
+    `, ${toJsVal({ relay: aggregateTrace ? deepPick(firstMsg.relay, aggregateTrace.relay) : firstMsg.relay })}` : '';
 
-  const initialState = toJsVal(firstMsg.prev);
-  const finalState = toJsVal(set(lensPath(lastMsg.path), lastMsg.next, lastMsg.prev));
+  const initialState = aggregateTrace ? deepPick(firstMsg.prev, aggregateTrace.model) : firstMsg.prev;
+  const finalState = set(
+    lensPath(lastMsg.path),
+    lastMsg.next,
+    aggregateTrace ? deepPick(lastMsg.prev, aggregateTrace.model) : lastMsg.prev
+  );
 
   return [
     `it('should respond to ${messageNames(pairs)} messages', () => {`,
     `  const container = isolate(${firstMsg.name}${relayArg});`,
-    `  container.push(${initialState});`,
+    `  container.push(${toJsVal(initialState)});`,
     ...containerDispatch(pairs),
     '',
     ...expectCommands(pairs),
-    `  expect(container.state()).to.deep.equal(${finalState});`,
+    `  expect(container.state()).to.deep.equal(${toJsVal(finalState)});`,
     `});`
   ].join('\n');
 }
