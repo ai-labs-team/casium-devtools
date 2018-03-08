@@ -13,11 +13,20 @@ export interface DependencyTrace {
  * inspected.
  */
 export const dependencyTrace = (context: string, name: string, model: {}, message = {}, relay = {}) => {
+
+  /**
+   * Symbols cannot cross the `eval` boundary, so they need to be coerced to
+   * their string equivalent.
+   */
+  const sanitizeKey = (key: any) =>
+    typeof key === 'symbol' ? key.toString() : key;
+
   const deepGetProxy = <T extends { [key: string]: any }>(obj: T, onRead: (path: string[]) => void, parents: string[] = []): T =>
     new Proxy(obj, {
       get<K extends keyof T>(target: T, key: K) {
+        console.log({ key });
         const value = target[key];
-        const fullPath = parents.concat(key);
+        const fullPath = parents.concat(sanitizeKey(key));
         onRead(fullPath);
 
         // JS, you crack me up (typeof null === 'object')
@@ -31,7 +40,7 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
       ownKeys<K extends keyof T>(target: T) {
         const keys = Reflect.ownKeys(target) as K[];
 
-        keys.forEach(key => onRead(parents.concat(key)));
+        keys.forEach(key => onRead(parents.concat(sanitizeKey(key))));
 
         return keys;
       }
@@ -63,12 +72,6 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
     }
     return val;
   }
-
-  /**
-   * Prevent an occasional and nasty 'Object couldn't be returned by value'
-   * error on Chrome
-   */
-  const serialize = (value: any) => JSON.parse(JSON.stringify(value));
 
   const archContext = window._ARCH_DEV_TOOLS_STATE.contexts[context];
   if (!archContext) {
@@ -112,11 +115,11 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
 
   updater(modelProxy, messageProxy, relayProxy);
 
-  return serialize({
+  return {
     model: modelPaths,
     message: messagePaths,
     relay: relayPaths
-  });
+  };
 };
 
 /**

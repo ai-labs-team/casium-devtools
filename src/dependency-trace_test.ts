@@ -38,7 +38,9 @@ describe('dependencyTrace()', () => {
                   count: relay.token.length > 0 && relay.token.length < 5 ? model.count + model.count + message.step : 0
                 })],
                 [{ name: 'IncrementCounter' }, (model: any, message: any) => ({ count: model.counter.count + message.step })],
-                [{ name: 'IncrementKeys' }, (model: any, message: any) => ({ count: model.count + Object.keys(message).length })]
+                [{ name: 'IncrementKeys' }, (model: any, message: any) => ({
+                  count: Object.keys(model).length + Object.keys(message).length
+                })]
               ])
             }
           },
@@ -105,6 +107,23 @@ describe('dependencyTrace()', () => {
       message: [
         ['step'],
         ['other']
+      ],
+      relay: []
+    });
+  });
+
+  it('stringifies Symbol keys', () => {
+    const trace = dependencyTrace('test', 'IncrementKeys', { count: 0, [Symbol.toStringTag]: 'CustomStateObject' }, { step: 1, other: 2, [Symbol.toStringTag]: 'CustomMessageObject' });
+
+    expect(trace).to.deep.equal({
+      model: [
+        ['count'],
+        ['Symbol(Symbol.toStringTag)']
+      ],
+      message: [
+        ['step'],
+        ['other'],
+        ['Symbol(Symbol.toStringTag)']
       ],
       relay: []
     });
