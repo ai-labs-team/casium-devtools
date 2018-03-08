@@ -64,6 +64,12 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
     return val;
   }
 
+  /**
+   * Prevent an occasional and nasty 'Object couldn't be returned by value'
+   * error on Chrome
+   */
+  const serialize = (value: any) => JSON.parse(JSON.stringify(value));
+
   const archContext = window._ARCH_DEV_TOOLS_STATE.contexts[context];
   if (!archContext) {
     throw Error(`Context '${context}' does not exist`);
@@ -106,11 +112,11 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
 
   updater(modelProxy, messageProxy, relayProxy);
 
-  return {
+  return serialize({
     model: modelPaths,
     message: messagePaths,
     relay: relayPaths
-  };
+  });
 };
 
 /**
