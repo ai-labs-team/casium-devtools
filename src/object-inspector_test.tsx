@@ -72,12 +72,12 @@ describe('diffNodeMapper', () => {
         ...obj,
         data: [
           ['+', 4],
-          [' ', 8],
+          [' '],
           ['-', 15]
         ],
         childNodes: [
           <NodeStub id="node0" data={['+', 4]} />,
-          <NodeStub id="node1" data={[' ', 8]} />,
+          <NodeStub id="node1" data={[' ']} />,
           <NodeStub id="node2" data={['-', 15]} />
         ]
       }));

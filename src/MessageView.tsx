@@ -12,6 +12,14 @@ import { MessageHeading } from './MessageHeading';
 
 import './MessageView.scss';
 
+/**
+ * When viewing an Object diff, expanded nodes cause rendering errors if the
+ * '__old' and '__new' values would appear 'below' the nesting boundary. To
+ * avoid this, use the awful hack of setting the default expand level to an
+ * artifically large number.
+ */
+const DIFF_EXPAND_LEVEL = 100;
+
 interface Props {
   selected: SerializedMessage[];
   showUnitTest?: boolean;
@@ -172,7 +180,7 @@ export class MessageView extends React.Component<Props, State> {
     const item = diffMap === undefined ? <em style={{ color: 'lightgray' }}>No Changes</em> : (
       <ObjectInspector
         data={diffMap}
-        expandLevel={3}
+        expandLevel={DIFF_EXPAND_LEVEL}
         nodeRenderer={nodeRenderer}
         mapper={diffNodeMapper}
       />
