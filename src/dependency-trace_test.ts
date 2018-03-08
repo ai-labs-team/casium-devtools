@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 
 import { dependencyTrace } from './dependency-trace';
 
@@ -6,7 +7,8 @@ declare var global: {
   window: {
     _ARCH_DEV_TOOLS_STATE: {
       contexts: {
-        test: {
+        [key: string]: {
+          path: string[];
           container: {
             update: Map<{ name: string }, (model: {}, message?: {}, relay?: {}) => any>
           }
@@ -16,12 +18,17 @@ declare var global: {
   }
 }
 
+const toggleUpdater = sinon.spy((flag: any) => ({
+  value: !flag.value
+}));
+
 describe('dependencyTrace()', () => {
   beforeEach(() => {
     global.window = {
       _ARCH_DEV_TOOLS_STATE: {
         contexts: {
           test: {
+            path: [],
             container: {
               update: new Map([
                 [{ name: 'Increment' }, (model: any, message: any, relay: any) => ({
@@ -32,6 +39,15 @@ describe('dependencyTrace()', () => {
                 })],
                 [{ name: 'IncrementCounter' }, (model: any, message: any) => ({ count: model.counter.count + message.step })],
                 [{ name: 'IncrementKeys' }, (model: any, message: any) => ({ count: model.count + Object.keys(message).length })]
+              ])
+            }
+          },
+
+          testWithPath: {
+            path: ['flag'],
+            container: {
+              update: new Map([
+                [{ name: 'Toggle' }, toggleUpdater]
               ])
             }
           }
@@ -91,6 +107,20 @@ describe('dependencyTrace()', () => {
         ['other']
       ],
       relay: []
+    });
+  });
+
+  it(`only uses model data at 'context.path', and prepends it to accessed path`, () => {
+    const trace = dependencyTrace('testWithPath', 'Toggle', { count: 0, flag: { value: false } }, {});
+
+    expect(trace).to.deep.equal({
+      model: [['flag', 'value']],
+      message: [],
+      relay: []
+    });
+
+    expect(toggleUpdater.lastCall.args[0]).to.deep.equal({
+      value: false
     });
   });
 })

@@ -51,6 +51,19 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
     return true;
   };
 
+  const path = (path: string[], obj: { [key: string]: any }) => {
+    let val = obj;
+    let idx = 0;
+    while (idx < path.length) {
+      if (val == null) {
+        return;
+      }
+      val = val[path[idx]];
+      idx += 1;
+    }
+    return val;
+  }
+
   const archContext = window._ARCH_DEV_TOOLS_STATE.contexts[context];
   if (!archContext) {
     throw Error(`Context '${context}' does not exist`);
@@ -73,11 +86,11 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
   const messagePaths: string[][] = [];
   const relayPaths: string[][] = [];
 
-  const modelProxy = deepGetProxy(model, path => {
+  const modelProxy = deepGetProxy(path(archContext.path, model) || {}, path => {
     if (!modelPaths.find(existingPath => arrayEq(existingPath, path))) {
       modelPaths.push(path);
     }
-  });
+  }, archContext.path);
 
   const messageProxy = deepGetProxy(message, path => {
     if (!messagePaths.find(existingPath => arrayEq(existingPath, path))) {
