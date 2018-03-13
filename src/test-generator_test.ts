@@ -82,7 +82,30 @@ describe('generateUnitTest()', () => {
     });
 
     context('when a dependency trace is available for a message', () => {
+      const incrementPath = {
+        ...increment,
+        path: ['counter'],
+        prev: {
+          counter: {
+            value: 0
+          },
+          flag: {
+            value: false
+          }
+        },
+        next: {
+          value: 1
+        },
+        relay: {
+          foo: 'bar'
+        }
+      };
+
       const trace = {
+        model: [
+          ['counter', 'value']
+        ],
+
         relay: [
           ['foo']
         ],
@@ -92,19 +115,22 @@ describe('generateUnitTest()', () => {
         ]
       } as any;
 
-      it('only picks dependent properties in `relay` and message data', () => {
-        const relay = { foo: 'bar' };
-        const result = generateUnitTest([{ ...increment, relay }], [trace]);
+      it('only picks dependent properties in state, relay and message data', () => {
+        const result = generateUnitTest([incrementPath], [trace]);
 
         expect(result).to.equal([
           `it('should respond to Increment messages', () => {`,
           `  const container = isolate(TestContainer, {`,
           `    relay: {foo: "bar"}`,
           `  });`,
-          `  container.push({count: 0});`,
+          `  container.push({`,
+          `    counter: {value: 0}`,
+          `  });`,
           `  container.dispatch(new Increment({step: 1}));`,
           '',
-          `  expect(container.state()).to.deep.equal({count: 1});`,
+          `  expect(container.state()).to.deep.equal({`,
+          `    counter: {value: 1}`,
+          `  });`,
           `});`
         ].join('\n'));
       });
@@ -194,20 +220,24 @@ describe('generateUnitTest()', () => {
 
     context('when dependency traces are available for each message', () => {
       const traces = [{
+        model: [['count']],
         relay: [['foo']],
         message: [['step']]
       }, {
+        model: [['count']],
         relay: [['foo']],
         message: [['step']]
       }, {
+        model: [['count']],
         relay: [['foo']],
         message: [['step']]
       }, {
+        model: [['count']],
         relay: [['foo']],
         message: [['step']]
       }] as any[];
 
-      it('only picks dependent properties in message data', () => {
+      it('only picks dependent properties in initial state, relay and message data', () => {
         const result = generateUnitTest(messages.map((msg, index) => ({ ...msg, relay: { 'foo': index, baz: 'quux' } })), traces);
 
         expect(result).to.equal([
@@ -226,6 +256,122 @@ describe('generateUnitTest()', () => {
           `  expect(container.state()).to.deep.equal({`,
           `    count: 0,`,
           `    xs: ["a", "b"]`,
+          `  });`,
+          `});`
+        ].join('\n'));
+      });
+    });
+  });
+
+  context('when multiple messages with different paths are selected', () => {
+    const messages = [{
+      name: 'TestContainer',
+      message: 'Increment',
+      path: ['counter'],
+      data: { step: 1, type: 'click' },
+      prev: {
+        counter: { value: 0 },
+        flag: { value: false }
+      },
+      next: { value: 1 },
+      relay: {}
+    }, {
+      name: 'TestContainer',
+      message: 'Increment',
+      path: ['counter'],
+      data: { step: 1, type: 'click' },
+      prev: {
+        counter: { value: 1 },
+        flag: { value: false }
+      },
+      next: { value: 2 },
+      relay: {}
+    }, {
+      name: 'TestContainer',
+      message: 'Toggle',
+      path: ['flag'],
+      data: {},
+      prev: {
+        counter: { value: 1 },
+        flag: { value: false }
+      },
+      next: { value: true },
+      relay: {}
+    }, {
+      name: 'TestContainer',
+      message: 'Decrement',
+      path: ['counter'],
+      data: { step: 2, type: 'click' },
+      prev: {
+        counter: { value: 2 },
+        flag: { value: true }
+      },
+      next: { value: 0 },
+    }] as any[];
+
+    it('generates a basic test', () => {
+      const result = generateUnitTest(messages, []);
+      expect(result).to.equal([
+        `it('should respond to Increment (x2), Toggle and Decrement messages', () => {`,
+        `  const container = isolate(TestContainer);`,
+        `  container.push({`,
+        `    counter: {value: 0},`,
+        `    flag: {value: false}`,
+        `  });`,
+        `  container.dispatch(`,
+        `    new Increment({step: 1, type: "click"}),`,
+        `    new Increment({step: 1, type: "click"}),`,
+        `    new Toggle({}),`,
+        `    new Decrement({step: 2, type: "click"})`,
+        `  );`,
+        '',
+        `  expect(container.state()).to.deep.equal({`,
+        `    counter: {value: 0},`,
+        `    flag: {value: true}`,
+        `  });`,
+        `});`
+      ].join('\n'));
+    });
+
+    context('when dependency traces are available for each message', () => {
+      const traces = [{
+        model: [['counter', 'value']],
+        relay: [[]],
+        message: [['step']]
+      }, {
+        model: [['counter', 'value']],
+        relay: [[]],
+        message: [['step']]
+      }, {
+        model: [['flag', 'value']],
+        relay: [[]],
+        message: [['step']]
+      }, {
+        model: [['counter', 'value']],
+        relay: [[]],
+        message: [['step']]
+      }] as any[];
+
+      it('only picks dependent properties in initial state, relay and message data', () => {
+        const result = generateUnitTest(messages, traces);
+
+        expect(result).to.equal([
+          `it('should respond to Increment (x2), Toggle and Decrement messages', () => {`,
+          `  const container = isolate(TestContainer);`,
+          `  container.push({`,
+          `    counter: {value: 0},`,
+          `    flag: {value: false}`,
+          `  });`,
+          `  container.dispatch(`,
+          `    new Increment({step: 1}),`,
+          `    new Increment({step: 1}),`,
+          `    new Toggle({}),`,
+          `    new Decrement({step: 2})`,
+          `  );`,
+          '',
+          `  expect(container.state()).to.deep.equal({`,
+          `    counter: {value: 0},`,
+          `    flag: {value: true}`,
           `  });`,
           `});`
         ].join('\n'));

@@ -13,11 +13,20 @@ export interface DependencyTrace {
  * inspected.
  */
 export const dependencyTrace = (context: string, name: string, model: {}, message = {}, relay = {}) => {
+
+  /**
+   * Symbols cannot cross the `eval` boundary, so they need to be coerced to
+   * their string equivalent.
+   */
+  const sanitizeKey = (key: any) =>
+    typeof key === 'symbol' ? key.toString() : key;
+
   const deepGetProxy = <T extends { [key: string]: any }>(obj: T, onRead: (path: string[]) => void, parents: string[] = []): T =>
     new Proxy(obj, {
       get<K extends keyof T>(target: T, key: K) {
+        console.log({ key });
         const value = target[key];
-        const fullPath = parents.concat(key);
+        const fullPath = parents.concat(sanitizeKey(key));
         onRead(fullPath);
 
         // JS, you crack me up (typeof null === 'object')
@@ -31,7 +40,7 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
       ownKeys<K extends keyof T>(target: T) {
         const keys = Reflect.ownKeys(target) as K[];
 
-        keys.forEach(key => onRead(parents.concat(key)));
+        keys.forEach(key => onRead(parents.concat(sanitizeKey(key))));
 
         return keys;
       }
@@ -50,6 +59,19 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
 
     return true;
   };
+
+  const path = (path: string[], obj: { [key: string]: any }) => {
+    let val = obj;
+    let idx = 0;
+    while (idx < path.length) {
+      if (val == null) {
+        return;
+      }
+      val = val[path[idx]];
+      idx += 1;
+    }
+    return val;
+  }
 
   const archContext = window._ARCH_DEV_TOOLS_STATE.contexts[context];
   if (!archContext) {
@@ -73,11 +95,11 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
   const messagePaths: string[][] = [];
   const relayPaths: string[][] = [];
 
-  const modelProxy = deepGetProxy(model, path => {
+  const modelProxy = deepGetProxy(path(archContext.path, model) || {}, path => {
     if (!modelPaths.find(existingPath => arrayEq(existingPath, path))) {
       modelPaths.push(path);
     }
-  });
+  }, archContext.path);
 
   const messageProxy = deepGetProxy(message, path => {
     if (!messagePaths.find(existingPath => arrayEq(existingPath, path))) {

@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as sinon from 'sinon';
 
 import { dependencyTrace } from './dependency-trace';
 
@@ -6,7 +7,8 @@ declare var global: {
   window: {
     _ARCH_DEV_TOOLS_STATE: {
       contexts: {
-        test: {
+        [key: string]: {
+          path: string[];
           container: {
             update: Map<{ name: string }, (model: {}, message?: {}, relay?: {}) => any>
           }
@@ -16,12 +18,17 @@ declare var global: {
   }
 }
 
+const toggleUpdater = sinon.spy((flag: any) => ({
+  value: !flag.value
+}));
+
 describe('dependencyTrace()', () => {
   beforeEach(() => {
     global.window = {
       _ARCH_DEV_TOOLS_STATE: {
         contexts: {
           test: {
+            path: [],
             container: {
               update: new Map([
                 [{ name: 'Increment' }, (model: any, message: any, relay: any) => ({
@@ -31,7 +38,18 @@ describe('dependencyTrace()', () => {
                   count: relay.token.length > 0 && relay.token.length < 5 ? model.count + model.count + message.step : 0
                 })],
                 [{ name: 'IncrementCounter' }, (model: any, message: any) => ({ count: model.counter.count + message.step })],
-                [{ name: 'IncrementKeys' }, (model: any, message: any) => ({ count: model.count + Object.keys(message).length })]
+                [{ name: 'IncrementKeys' }, (model: any, message: any) => ({
+                  count: Object.keys(model).length + Object.keys(message).length
+                })]
+              ])
+            }
+          },
+
+          testWithPath: {
+            path: ['flag'],
+            container: {
+              update: new Map([
+                [{ name: 'Toggle' }, toggleUpdater]
               ])
             }
           }
@@ -91,6 +109,37 @@ describe('dependencyTrace()', () => {
         ['other']
       ],
       relay: []
+    });
+  });
+
+  it('stringifies Symbol keys', () => {
+    const trace = dependencyTrace('test', 'IncrementKeys', { count: 0, [Symbol.toStringTag]: 'CustomStateObject' }, { step: 1, other: 2, [Symbol.toStringTag]: 'CustomMessageObject' });
+
+    expect(trace).to.deep.equal({
+      model: [
+        ['count'],
+        ['Symbol(Symbol.toStringTag)']
+      ],
+      message: [
+        ['step'],
+        ['other'],
+        ['Symbol(Symbol.toStringTag)']
+      ],
+      relay: []
+    });
+  });
+
+  it(`only uses model data at 'context.path', and prepends it to accessed path`, () => {
+    const trace = dependencyTrace('testWithPath', 'Toggle', { count: 0, flag: { value: false } }, {});
+
+    expect(trace).to.deep.equal({
+      model: [['flag', 'value']],
+      message: [],
+      relay: []
+    });
+
+    expect(toggleUpdater.lastCall.args[0]).to.deep.equal({
+      value: false
     });
   });
 })

@@ -20,6 +20,7 @@ declare global {
     _ARCH_DEV_TOOLS_STATE: {
       contexts: {
         [id: string]: {
+          path: string[],
           container: {
             update: Map<{ name: string }, (model: {}, message?: {}, relay?: {}) => void>
           }
