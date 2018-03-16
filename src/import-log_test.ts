@@ -4,7 +4,6 @@ import * as sinon from 'sinon';
 import * as importLog from './import-log';
 import * as util from './util';
 import * as notifier from './Notifier';
-import { SerializedMessage } from './messaging';
 
 declare var global: {
   window: {

@@ -3,7 +3,7 @@ import * as sinon from 'sinon';
 import { expect } from 'chai';
 import { shallow, ShallowWrapper } from 'enzyme';
 
-import { Notifier, display } from './Notifier';
+import { Notifier } from './Notifier';
 
 const notice = {
   type: 'success' as 'success',
