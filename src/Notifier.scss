@@ -1,0 +1,55 @@
+.notifier {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+
+    &__notice {
+        border-width: 1px;
+        border-style: solid;
+        color: white;
+
+        &--error {
+            border-color: #b71c1c;
+            background: #c62828;
+        }
+
+        &--warning {
+            border-color: #ffd600;
+            background: #ffea00;
+            color: rgba(0, 0, 0, 0.75);
+        }
+
+        &--info {
+            border-color: #01579b;
+            background: #0277bd;
+        }
+
+        &--success {
+            border-color: #1b5e20;
+            background: #2e7d32;
+        }
+
+        &__close {
+            float: right;
+            padding: 10px;
+            cursor: pointer;
+            opacity: 0.75;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
+        &__title {
+            font-weight: bold;
+        }
+
+        p, pre {
+            margin: 10px;
+        }
+    }
+}
