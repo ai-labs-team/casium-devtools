@@ -97,6 +97,17 @@ html, body {
   line-height: 25px;
   font-size: 12px;
   text-align: center;
+
+  &.import-msg-button {
+    .fa-arrow-left {
+      left: 6px;
+      font-size: 8px;
+    }
+
+    .fa-file-text-o {
+      left: -2px;
+    }
+  }
 }
 
 .tool-button:hover {

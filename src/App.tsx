@@ -4,6 +4,7 @@ import { concat, contains, equals, head, last, isNil, merge, slice, where } from
 
 import { SerializedMessage } from './messaging';
 import { download } from './util';
+import { importLog } from './import-log';
 import { MessageView } from './MessageView';
 
 import 'font-awesome/scss/font-awesome.scss';
@@ -158,6 +159,20 @@ export class App extends React.Component<{}, State> {
                 download({ data: JSON.stringify(messages, null, 2), filename: 'message-log.json' });
               }}
             />
+            <span
+              className="fa-stack tool-button import-msg-button"
+              title="Import Message Log"
+              onClick={importLog}
+            >
+              <FontAwesome
+                name="file-text-o"
+                stack="1x"
+              />
+              <FontAwesome
+                name="arrow-left"
+                stack="1x"
+              />
+            </span>
             {selected.length ? (
               <FontAwesome
                 key="replay"
