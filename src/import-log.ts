@@ -1,29 +1,22 @@
-import { groupBy, last, map, pipe, values } from 'ramda';
+import { last } from 'ramda';
 
 import { upload } from './util';
-
 import { display } from './Notifier';
 import { SerializedMessage } from './messaging';
 
 /**
- * For a given array of Messages, return the last message for each Path
+ * 'Replays' a message log by using the 'time travel' feature to set the
+ * application state to the last message found in a JSON message log file.
  */
-export const lastMessageByPath: (messages: SerializedMessage[]) => SerializedMessage[] =
-  pipe(
-    groupBy<SerializedMessage>(msg => msg.path.join('.')),
-    (map as any)((messages: SerializedMessage[]) => last(messages) as SerializedMessage),
-    values
-  )
-
 export const importLog = () =>
   upload({ type: 'application/json' })
     .then(({ filename, content }) => {
       const messages: SerializedMessage[] = JSON.parse(content);
 
       // Determine the last message for each path and replay it using Time Travel
-      const replay = lastMessageByPath(messages);
+      const toReplay = last(messages);
 
-      if (!replay.length) {
+      if (!toReplay) {
         return display({
           type: 'warning',
           title: 'No messages to replay',
@@ -31,12 +24,12 @@ export const importLog = () =>
         });
       }
 
-      replay.forEach(msg => window.messageClient({ selected: msg }));
+      window.messageClient({ selected: toReplay });
 
       display({
         type: 'success',
         title: 'Successfully replayed message log',
-        message: `Log '${filename}' contained ${replay.length} replayable message(s)`
+        message: `Application state now matches the last message recorded in log '${filename}'`
       });
     })
     .catch(err => display({

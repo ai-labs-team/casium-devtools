@@ -11,63 +11,42 @@ declare var global: {
   }
 }
 
-describe('lastMessageByPath()', () => {
-  const tests = [{
-    messages: [{
-      path: [],
-      next: { value: 0 }
-    }, {
-      path: [],
-      next: { value: 1 }
-    }, {
-      path: [],
-      next: { value: 2 }
-    }],
-    result: [{
-      path: [],
-      next: { value: 2 }
-    }]
-  }, {
-    messages: [{
-      path: [],
-      next: {
-        counter: { value: 0 },
-        message: { title: '' }
-      }
-    }, {
-      path: ['counter'],
-      next: { value: 10 }
-    }, {
-      path: ['message'],
-      next: { title: 'hello' }
-    }, {
-      path: ['counter'],
-      next: { value: 9 }
-    }, {
-      path: ['message'],
-      next: { title: 'goodbye' }
-    }],
-    result: [{
-      path: [],
-      next: {
-        counter: { value: 0 },
-        message: { title: '' }
-      }
-    }, {
-      path: ['counter'],
-      next: { value: 9 }
-    }, {
-      path: ['message'],
-      next: { title: 'goodbye' }
-    }]
-  }];
-
-  it('returns an array containing the last Message handled by a given path', () => {
-    tests.forEach(({ messages, result }) => {
-      expect(importLog.lastMessageByPath(messages as any)).to.deep.equal(result);
-    });
-  });
-});
+const messages = [{
+  path: [],
+  prev: {},
+  next: {
+    counter: { value: 0 },
+    message: { title: '' }
+  }
+}, {
+  path: ['counter'],
+  prev: {
+    counter: { value: 0 },
+    message: { title: '' }
+  },
+  next: { value: 10 }
+}, {
+  path: ['message'],
+  prev: {
+    counter: { value: 10 },
+    message: { title: '' }
+  },
+  next: { title: 'hello' }
+}, {
+  path: ['counter'],
+  prev: {
+    counter: { value: 10 },
+    message: { title: 'hello' }
+  },
+  next: { value: 9 }
+}, {
+  path: ['message'],
+  prev: {
+    counter: { value: 9 },
+    message: { title: 'hello' }
+  },
+  next: { title: 'goodbye' }
+}];
 
 describe('importLog', () => {
   before(() => {
@@ -80,30 +59,12 @@ describe('importLog', () => {
     (notifier.display as sinon.SinonStub).reset();
   });
 
-  it('uses time travel to replay the last message for each path', done => {
+  it('uses time travel to replay the last message in the log', done => {
     global.window.messageClient = sinon.spy();
 
     (util.upload as sinon.SinonStub).resolves({
       filename: 'messages.json',
-      content: JSON.stringify([{
-        path: [],
-        next: {
-          counter: { value: 0 },
-          message: { title: '' }
-        }
-      }, {
-        path: ['counter'],
-        next: { value: 10 }
-      }, {
-        path: ['message'],
-        next: { title: 'hello' }
-      }, {
-        path: ['counter'],
-        next: { value: 9 }
-      }, {
-        path: ['message'],
-        next: { title: 'goodbye' }
-      }])
+      content: JSON.stringify(messages)
     });
 
     importLog.importLog();
@@ -111,23 +72,7 @@ describe('importLog', () => {
     setImmediate(() => {
       expect(global.window.messageClient.args).to.deep.equal([
         [{
-          selected: {
-            path: [],
-            next: {
-              counter: { value: 0 },
-              message: { title: '' }
-            }
-          }
-        }], [{
-          selected: {
-            path: ['counter'],
-            next: { value: 9 }
-          }
-        }], [{
-          selected: {
-            path: ['message'],
-            next: { title: 'goodbye' }
-          }
+          selected: messages[4]
         }]
       ]);
 
@@ -135,7 +80,7 @@ describe('importLog', () => {
         [{
           type: 'success',
           title: 'Successfully replayed message log',
-          message: `Log 'messages.json' contained 3 replayable message(s)`
+          message: `Application state now matches the last message recorded in log 'messages.json'`
         }]
       ]);
 
