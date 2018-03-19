@@ -28,6 +28,48 @@ export const download = (options: Partial<DownloadOptions> = {}) => {
   link.dispatchEvent(evt);
 };
 
+export interface UploadOptions {
+  type: string;
+}
+
+export interface UploadResult {
+  filename: string;
+  content: string;
+}
+
+export const upload = (options: Partial<UploadOptions> = {}) =>
+  new Promise<UploadResult>((resolve, reject) => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+
+    if (options.type) {
+      input.setAttribute('accept', options.type)
+    }
+
+    input.addEventListener('change', e => {
+      if (!input.files || !input.files[0]) {
+        return reject();
+      }
+
+      const file = input.files[0];
+
+      const reader = new FileReader();
+      reader.onload = (e: any) => resolve({
+        filename: file.name,
+        content: e.target.result
+      });
+
+      reader.onerror = (err: any) => reject(err);
+
+      reader.readAsText(file);
+    });
+
+    const evt = document.createEvent('MouseEvents');
+    evt.initEvent('click', true, true);
+
+    input.dispatchEvent(evt);
+  });
+
 export const nextState = ({ path, prev, next }: SerializedMessage) =>
   set(lensPath(path), next, prev);
 
