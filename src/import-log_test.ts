@@ -124,9 +124,10 @@ describe('importLog', () => {
       setImmediate(() => {
         expect((notifier.display as sinon.SinonStub).args).to.deep.equal([
           [{
-            type: 'warning',
-            title: 'No messages to replay',
-            message: `Log 'empty.json' does not contain any replayable message(s)`
+            type: 'error',
+            title: 'Failed to replay message log',
+            message: 'The file that you attempted to import could not be replayed:',
+            code: "Error: Log 'empty.json' does not contain any replayable message(s)"
           }]
         ]);
 

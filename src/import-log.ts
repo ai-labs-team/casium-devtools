@@ -17,11 +17,7 @@ export const importLog = () =>
       const toReplay = last(messages);
 
       if (!toReplay) {
-        return display({
-          type: 'warning',
-          title: 'No messages to replay',
-          message: `Log '${filename}' does not contain any replayable message(s)`
-        });
+        throw Error(`Log '${filename}' does not contain any replayable message(s)`);
       }
 
       window.messageClient({ selected: toReplay });
@@ -31,10 +27,16 @@ export const importLog = () =>
         title: 'Successfully replayed message log',
         message: `Application state now matches the last message recorded in log '${filename}'`
       });
+
+      return messages;
     })
-    .catch(err => display({
-      type: 'error',
-      title: 'Failed to replay message log',
-      message: 'The file that you attempted to import could not be replayed:',
-      code: err.toString()
-    }));
+    .catch(err => {
+      display({
+        type: 'error',
+        title: 'Failed to replay message log',
+        message: 'The file that you attempted to import could not be replayed:',
+        code: err.toString()
+      });
+
+      throw err;
+    });

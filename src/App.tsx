@@ -162,7 +162,7 @@ export class App extends React.Component<{}, State> {
             <span
               className="fa-stack tool-button import-msg-button"
               title="Import Message Log"
-              onClick={importLog}
+              onClick={this._import}
             >
               <FontAwesome
                 name="file-text-o"
@@ -270,4 +270,16 @@ export class App extends React.Component<{}, State> {
       </div >
     );
   }
+
+  /**
+   * Use `importLog` to replay a message log from a file on disk, then set
+   * `state.messages` to display the Messages contained in the log, and reset
+   * selection state.
+   */
+  protected _import = () =>
+    importLog()
+      .then(messages => this.setState({
+        messages,
+        selected: []
+      }))
 }
