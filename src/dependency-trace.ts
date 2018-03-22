@@ -1,4 +1,4 @@
-import { SerializedMessage } from "./messaging";
+import { SerializedMessage } from './instrumenter';
 
 export interface DependencyTrace {
   model: string[][];
@@ -24,7 +24,6 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
   const deepGetProxy = <T extends { [key: string]: any }>(obj: T, onRead: (path: string[]) => void, parents: string[] = []): T =>
     new Proxy(obj, {
       get<K extends keyof T>(target: T, key: K) {
-        console.log({ key });
         const value = target[key];
         const fullPath = parents.concat(sanitizeKey(key));
         onRead(fullPath);
@@ -73,19 +72,23 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
     return val;
   }
 
-  const archContext = window._ARCH_DEV_TOOLS_STATE.contexts[context];
-  if (!archContext) {
+  const storedContext = window.__CASIUM_DEV_TOOLS_INSTRUMENTER__.contexts[context];
+  if (!storedContext) {
     throw Error(`Context '${context}' does not exist`);
   }
 
-  const key = Array.from(archContext.container.update.keys())
+  if (!storedContext.container) {
+    throw Error(`Context '${context}' does not have a container`);
+  }
+
+  const key = Array.from(storedContext.container.update.keys())
     .find(updater => updater.name === name);
 
   if (!key) {
     throw Error(`Context '${context}' does not contain an Updater of type '${name}'`);
   }
 
-  const updater = archContext.container.update.get(key);
+  const updater = storedContext.container.update.get(key);
 
   if (!updater) {
     throw Error(`Context '${context}' contains an Updater of type '${key}', but it could not be retrieved`);
@@ -95,11 +98,12 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
   const messagePaths: string[][] = [];
   const relayPaths: string[][] = [];
 
-  const modelProxy = deepGetProxy(path(archContext.path, model) || {}, path => {
+  // R.path can safely handle symbols despite type definition
+  const modelProxy = deepGetProxy(path(storedContext.path as string[], model) || {}, path => {
     if (!modelPaths.find(existingPath => arrayEq(existingPath, path))) {
       modelPaths.push(path);
     }
-  }, archContext.path);
+  }, storedContext.path as string[]);
 
   const messageProxy = deepGetProxy(message, path => {
     if (!messagePaths.find(existingPath => arrayEq(existingPath, path))) {

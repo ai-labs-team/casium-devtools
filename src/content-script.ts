@@ -1,38 +1,29 @@
-// Executes on client page load
-(() => {
-  const port = browser.runtime.connect(undefined, { name: 'CasiumDevToolsPageScript' });
-  const seen: string[] = [];
+import { fromMatches } from './util';
 
-  // Get messages from background script
-  port.onMessage.addListener(function(msg) {
-    window.postMessage(msg, '*');
-  });
+/**
+ * Inject a Script into the inspected window containing an Instrumenter
+ * configured to use the `postMessage` client.
+ */
+const clientScript = document.createElement('script');
+clientScript.src = browser.extension.getURL('injected-script.js');
+(document.head || document.documentElement).appendChild(clientScript);
 
-  port.postMessage({
-    from: 'CasiumDevToolsPageScript',
-    state: 'initialized'
-  });
+const isAllowedPortSender = fromMatches(['CasiumDevToolsPanel']);
+const isAllowedPostMessageSender = fromMatches(['CasiumDevToolsInstrumenter']);
 
-  window.addEventListener('message', function(message) {
-    if (!message || !message.data || !message.data.id || message.data.from === 'CasiumDevToolsPageScript') {
-      return;
-    }
-    if (seen.includes(message.data.id)) return;
-    seen.push(message.data.id);
+const port = browser.runtime.connect(undefined, { name: 'CasiumDevToolsPageScript' });
 
-    if (message.data.from !== 'Arch') {
-      return;
-    }
+/**
+ * Relay messages from the Background Script to the Client via
+ * `window.postMessage`.
+ */
+port.onMessage.addListener(msg => {
+  isAllowedPortSender(msg) && window.postMessage(msg, '*');
+});
 
-    try {
-      port.postMessage(message.data);
-    } catch (e) {
-      // Probably a cached version of this script trying to talk to a version of the extension
-      // that no longer exists
-      console.warn([
-        "The page's connection to Architecture Dev Tools has gone out of sync.",
-        "Please refresh the page. If this issue persists, please restart the browser."
-      ].join(' '));
-    }
-  }, false);
-})();
+/**
+ * Relay messages from the Client via `port.postMessage`
+ */
+window.addEventListener('message', ({ data }) => {
+  isAllowedPostMessageSender(data) && port.postMessage(data);
+});

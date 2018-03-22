@@ -1,7 +1,7 @@
 import * as hjson from 'hjson';
 import { any, concat, head, keys, last, lensPath, mergeWith, pipe, set, uniq } from 'ramda';
 
-import { SerializedMessage, Command } from './messaging';
+import { SerializedMessage, SerializedCommand } from './instrumenter';
 import { DependencyTrace } from './dependency-trace';
 import { deepPick } from './util';
 
@@ -92,7 +92,7 @@ const containerDispatch = (pairs: MessageTracePair[]) => {
 const expectCommands = (pairs: MessageTracePair[]) => {
   const commands = pairs
     .filter(hasCommand)
-    .map(([msg]) => (msg.commands as Command[]).map(([name, data]) =>
+    .map(([msg]) => (msg.commands as SerializedCommand[]).map(([name, data]) =>
       `    new ${name}(${toJsVal(data)}),`
     ));
 

@@ -1,31 +1,19 @@
-import { runtime } from 'chrome';
-
-import { SerializedMessage, Listener } from './messaging';
+import { INSTRUMENTER_KEY, Instrumenter } from './instrumenter';
+import { Listener } from './messaging';
 
 declare global {
   interface Window {
     PORTS: {
-      [key: string]: runtime.Port
-    };
+      [key: string]: browser.runtime.Port
+    },
 
     QUEUES: {
-      [key: string]: typeof runtime.Port.postmessage
-    };
+      [key: string]: browser.runtime.Port['postMessage'][]
+    },
 
-    MESSAGES: SerializedMessage[];
     LISTENERS: Listener[][];
-    FLUSH_QUEUE: () => void;
     messageClient: (data: any) => void;
 
-    _ARCH_DEV_TOOLS_STATE: {
-      contexts: {
-        [id: string]: {
-          path: string[],
-          container: {
-            update: Map<{ name: string }, (model: {}, message?: {}, relay?: {}) => void>
-          }
-        }
-      }
-    }
+    [INSTRUMENTER_KEY]: Instrumenter
   }
 }
