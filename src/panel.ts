@@ -6,5 +6,3 @@ import { Notifier } from './Notifier';
 
 render(createElement(App), document.getElementById('app'));
 render(createElement(Notifier), document.getElementById('notifier'));
-
-window.messageClient({ state: 'initialized' });

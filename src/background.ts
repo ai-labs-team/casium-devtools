@@ -5,48 +5,32 @@
 // browser.tabs.*
 // browser.extension.*
 
-browser.runtime.onConnect.addListener(port => {
-  const extensionListener = (message: any, sender: browser.runtime.MessageSender, sendResponse: (response?: any) => void) => {
-    if (message.tabId) {
-      if (message.action === 'code' && message.content) {
-        // Evaluate script in inspectedPage
-        browser.tabs.executeScript(message.tabId, { code: message.content });
-      } else if (message.action === 'script' && message.content) {
-        // Attach script to inspectedPage
-        browser.tabs.executeScript(message.tabId, { file: message.content });
-      } else {
-        console.log("%c[Relaying Message]", "font-weight: bold; color: #e6b800;", message);
-        // Pass message to inspectedPage
-        browser.tabs.sendMessage(message.tabId, message).then(sendResponse);
-      }
-
-      // This accepts messages from the inspectedPage and
-      // sends them to the panel
-    } else {
-      port.postMessage(message);
-    }
-    sendResponse(message);
-  }
-
-  // Listens to messages sent from the panel
-  browser.runtime.onMessage.addListener(extensionListener);
-
-  port.onDisconnect.addListener(() => {
-    browser.runtime.onMessage.removeListener(extensionListener);
-  });
-
-  port.onMessage.addListener(message => {
-    port.postMessage(message);
-  });
-});
-
-const ports: typeof window.PORTS = window.PORTS = {};
-const queues: typeof window.QUEUES = window.QUEUES = {};
+const ports: { [name: string]: browser.runtime.Port } = {};
+const queues: { [dest: string]: browser.runtime.Port['postMessage'][] } = {};
 
 const channels: { [key: string]: string } = {
   CasiumDevToolsPageScript: "CasiumDevToolsPanel",
   CasiumDevToolsPanel: "CasiumDevToolsPageScript"
 };
+
+const broadcast = (msg: {}) => {
+  for (const source in channels) {
+    const dest = ports[source];
+
+    if (!dest) {
+      return;
+    }
+
+    try {
+      const message = Object.assign({ from: 'CasiumDevToolsBackgroundScript' }, msg);
+      console.log(`%c[Broadcast]: ${dest.name}`, "font-weight: bold; color: #e6b800;", message);
+      dest.postMessage(message);
+    } catch (e) {
+      // Thrown when a port is diconnected; this is fine
+      console.log(`%c[Broadcast failed]: ${dest.name}`, "font-weight: bold; color: #cc2900;");
+    }
+  }
+}
 
 // DevTools / page connection
 browser.runtime.onConnect.addListener(port => {
@@ -85,8 +69,11 @@ browser.runtime.onConnect.addListener(port => {
   port.postMessage({ info: "Client connected to background", name: port.name });
 
   port.onDisconnect.addListener(function() {
+    broadcast({ state: 'disconnected' });
+    console.log(`%c[Client Disconnected]: ${port.name}`, "font-weight: bold; color: #cc2900;");
     (port.onMessage.removeListener as any)(portListener);
     delete ports[port.name];
   });
+
   (port.onMessage.addListener as any)(portListener);
 });

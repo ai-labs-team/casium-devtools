@@ -8,7 +8,7 @@ import { Instrumenter } from './instrumenter';
 import { fromMatches } from './util';
 
 const isAllowedSender = fromMatches([
-  'CasiumDevToolsPageScript',
+  'CasiumDevToolsBackgroundScript',
   'CasiumDevToolsPanel'
 ]);
 
@@ -18,13 +18,29 @@ new Instrumenter().addBackend('WebExtension', ({ connect, disconnect, send }) =>
       return;
     }
 
+    /**
+     * Sent from the Panel UI once it is initialized, ensures that the backend
+     * queue is not flushed until it is ready to receive and display messages.
+     */
     if (data.state === 'initialized') {
-      connect();
+      return connect();
     }
-  })
-}, message => {
-  window.postMessage({
-    ...message,
-    from: 'CasiumDevToolsInstrumenter'
-  }, '*');
+
+    /**
+     * Sent from the Background Script when the Panel is closed or reloaded;
+     * ensures that messages are queued until the Panel is ready again.
+     */
+    if (data.state === 'disconnected') {
+      return disconnect();
+    }
+
+    /**
+     * Forward all other messages directly to the Instrumenter
+     */
+    send(data);
+  });
+
+  return message => {
+    window.postMessage(message, '*');
+  }
 })

@@ -8,7 +8,11 @@ const clientScript = document.createElement('script');
 clientScript.src = browser.extension.getURL('injected-script.js');
 (document.head || document.documentElement).appendChild(clientScript);
 
-const isAllowedPortSender = fromMatches(['CasiumDevToolsPanel']);
+const isAllowedPortSender = fromMatches([
+  'CasiumDevToolsPanel',
+  'CasiumDevToolsBackgroundScript'
+]);
+
 const isAllowedPostMessageSender = fromMatches(['CasiumDevToolsInstrumenter']);
 
 const port = browser.runtime.connect(undefined, { name: 'CasiumDevToolsPageScript' });

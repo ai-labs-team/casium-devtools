@@ -91,11 +91,22 @@ export class App extends React.Component<{}, State> {
     ]);
 
     window.LISTENERS.push([
-      where({ from: equals('CasiumDevToolsPageScript'), state: equals('initialized') }),
+      where({ from: equals('CasiumDevToolsInstrumenter'), state: equals('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
       () => this.state.active.replay && window.messageClient({ selected: this.state.selected[0] }),
+      /**
+       * Notify the Instrumenter Backend(s) that the Panel is already initialized
+       * if the inspected page was reloaded
+       */
+      () => window.messageClient({ state: 'initialized' })
     ]);
+
+    /**
+     * Notify the Instrumenter Backend(s) that the Panel was initialized if it
+     * loaded *after* the inspected page
+     */
+    window.messageClient({ state: 'initialized' });
   }
 
   setActive<K extends keyof State['active']>(key: K, state: boolean) {
