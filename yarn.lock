@@ -739,9 +739,9 @@ caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
 
-casium@^1.0.11:
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/casium/-/casium-1.0.11.tgz#2863d7afe55c05422e09e5f528a795a296aeeb3b"
+casium@2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/casium/-/casium-2.0.1.tgz#362f78e6470c4a8a9b5f2b69db2e972e9d29a15f"
 
 center-align@^0.1.1:
   version "0.1.3"
