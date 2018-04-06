@@ -1,8 +1,8 @@
+import { INSTRUMENTER_KEY } from './instrumenter';
+
 let panelCreated = false;
 
-const PAGE_HAS_CASIUM_EVAL = `!!(
-  Object.keys(window._ARCH_DEV_TOOLS_STATE.contexts).length
-)`;
+const PAGE_HAS_CASIUM_EVAL = `!!(window.${INSTRUMENTER_KEY}.stateManager)`;
 
 const createPanelIfCasiumLoaded = () => {
   if (panelCreated) {

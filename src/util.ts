@@ -1,6 +1,6 @@
-import { and, both, equals, has, is, lensPath, map, merge, pipe, reduce, set, tail, view } from 'ramda';
+import { and, both, contains, equals, flip, has, is, lensPath, map, merge, pipe, propSatisfies, reduce, set, tail, view } from 'ramda';
 
-import { SerializedMessage } from './messaging';
+import { SerializedMessage } from './instrumenter';
 
 export interface DownloadOptions {
   filename: string;
@@ -126,3 +126,7 @@ export const deepPick = <T extends {}>(data: T, paths: string[][]): Partial<T> =
       return set(lens, value, result);
     }, {});
 
+const _contains = flip(contains);
+
+export const fromMatches = (senders: string[]) =>
+  propSatisfies(_contains(senders), 'from');

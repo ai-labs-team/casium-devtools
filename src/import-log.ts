@@ -2,7 +2,7 @@ import { last } from 'ramda';
 
 import { upload } from './util';
 import { display } from './Notifier';
-import { SerializedMessage } from './messaging';
+import { SerializedMessage } from './instrumenter';
 
 /**
  * 'Replays' a message log by using the 'time travel' feature to set the

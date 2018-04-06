@@ -2,10 +2,11 @@ import { expect } from 'chai';
 import * as sinon from 'sinon';
 
 import { dependencyTrace } from './dependency-trace';
+import { INSTRUMENTER_KEY } from './instrumenter';
 
 declare var global: {
   window: {
-    _ARCH_DEV_TOOLS_STATE: {
+    [INSTRUMENTER_KEY]: {
       contexts: {
         [key: string]: {
           path: string[];
@@ -25,7 +26,7 @@ const toggleUpdater = sinon.spy((flag: any) => ({
 describe('dependencyTrace()', () => {
   beforeEach(() => {
     global.window = {
-      _ARCH_DEV_TOOLS_STATE: {
+      [INSTRUMENTER_KEY]: {
         contexts: {
           test: {
             path: [],
