@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as FontAwesome from 'react-fontawesome';
 import { concat, contains, equals, head, last, isNil, merge, slice, where } from 'ramda';
 
-import { SerializedMessage } from './messaging';
+import { SerializedMessage } from './instrumenter';
 import { download } from './util';
 import { importLog } from './import-log';
 import { MessageView } from './MessageView';
@@ -81,23 +81,32 @@ export class App extends React.Component<{}, State> {
 
   componentWillMount() {
     window.LISTENERS.push([
-      where({ from: equals('Arch'), state: isNil }),
+      where({ from: equals('CasiumDevToolsInstrumenter'), state: isNil }),
       message => !this.state.haltForReplay && this.setState({ messages: this.state.messages.concat(message) })
     ]);
 
     window.LISTENERS.push([
-      where({ from: equals('ArchDevToolsPanel'), state: isNil }),
+      where({ from: equals('CasiumDevToolsPanel'), state: isNil }),
       message => this.state.haltForReplay && this.setState({ haltForReplay: false })
     ]);
 
     window.LISTENERS.push([
-      where({ from: equals('CasiumDevToolsPageScript'), state: equals('initialized') }),
+      where({ from: equals('CasiumDevToolsInstrumenter'), state: equals('initialized') }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
       () => this.state.active.replay && window.messageClient({ selected: this.state.selected[0] }),
+      /**
+       * Notify the Instrumenter Backend(s) that the Panel is already initialized
+       * if the inspected page was reloaded
+       */
+      () => window.messageClient({ state: 'initialized' })
     ]);
 
-    window.FLUSH_QUEUE();
+    /**
+     * Notify the Instrumenter Backend(s) that the Panel was initialized if it
+     * loaded *after* the inspected page
+     */
+    window.messageClient({ state: 'initialized' });
   }
 
   setActive<K extends keyof State['active']>(key: K, state: boolean) {
@@ -113,7 +122,7 @@ export class App extends React.Component<{}, State> {
 
   clearMessages() {
     this.setState({
-      messages: (window.MESSAGES = []),
+      messages: [],
       selected: [],
       haltForReplay: false,
       active: merge(this.state.active, { timeTravel: false, replay: false })

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { SerializedMessage } from './messaging';
+import { SerializedMessage } from './instrumenter';
 
 const REFRESH_INTERVAL = 500;
 

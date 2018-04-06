@@ -22,12 +22,15 @@
       "content-script.js"
     ],
     "all_frames": true,
-    "run_at": "document_idle"
+    "run_at": "document_start"
   }],
   "permissions": [
     "tabs",
     "http://*/*",
     "https://*/*"
+  ],
+  "web_accessible_resources": [
+    "injected-script.js"
   ],
   "manifest_version": 2
 }

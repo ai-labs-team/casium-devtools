@@ -1,3 +1,5 @@
+import { SerializedMessage } from './instrumenter';
+
 // This creates and maintains the communication channel between
 // the inspectedPage and the dev tools panel.
 //
@@ -8,52 +10,22 @@
 //   tabId: [Automatically added]
 // }
 
-export type Command = [string, {}];
-
-export interface SerializedMessage {
-  id: string;
-  name: string;
-  context: string;
-  ts: number;
-  prev: any;
-  next: any;
-  from: string;
-  relay: any;
-  message: string;
-  data: {} | null;
-  path: string[];
-  commands?: Command[];
-}
-
 export type Listener = (msg: SerializedMessage) => any;
 
-(function createChannel() {
+window.LISTENERS = []
 
-  window.MESSAGES = [];
-  window.LISTENERS = []
+const processMsg = (msg: SerializedMessage) =>
+  ([predicate, ...listeners]: Listener[]) => predicate(msg) && listeners.map(l => l(msg));
 
-  let queue: SerializedMessage[] = [];
+const backgroundPageConnection = browser.runtime.connect(undefined, { name: 'CasiumDevToolsPanel' });
 
-  window.FLUSH_QUEUE = () => {
-    queue.forEach(msg => window.LISTENERS.forEach(processMsg(msg)));
-    queue = [];
-  };
+backgroundPageConnection.onMessage.addListener((message: any) => {
+  window.LISTENERS.forEach(processMsg(message));
+});
 
-  const processMsg = (msg: SerializedMessage) =>
-    ([predicate, ...listeners]: Listener[]) => predicate(msg) && listeners.map(l => l(msg));
-
-  const backgroundPageConnection = browser.runtime.connect(undefined, { name: 'CasiumDevToolsPanel' });
-
-  backgroundPageConnection.onMessage.addListener((message: any) => {
-    window.LISTENERS.length ? window.LISTENERS.forEach(processMsg(message)) : queue.push(message);
-  });
-
-  window.messageClient = (data) => {
-    backgroundPageConnection.postMessage(Object.assign({
-      from: "CasiumDevToolsPanel",
-      tabId: browser.devtools.inspectedWindow.tabId,
-    }, data));
-  }
-
-  window.messageClient({ state: 'initialized' });
-}());
+window.messageClient = (data) => {
+  backgroundPageConnection.postMessage(Object.assign({
+    from: "CasiumDevToolsPanel",
+    tabId: browser.devtools.inspectedWindow.tabId,
+  }, data));
+}

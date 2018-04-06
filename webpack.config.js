@@ -13,6 +13,7 @@ const extractSass = new ExtractTextPlugin({
 module.exports = {
   entry: {
     'content-script': './src/content-script.ts',
+    'injected-script': './src/injected-script.ts',
     'background': './src/background.ts',
     'devtools': './src/devtools.ts',
     'panel': './src/panel.ts',

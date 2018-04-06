@@ -3,7 +3,7 @@ import { ObjectInspector } from 'react-inspector';
 import { unnest, identity, last, pluck } from 'ramda';
 import { diff } from 'json-diff';
 
-import { SerializedMessage, Command } from './messaging';
+import { SerializedMessage, SerializedCommand } from './instrumenter';
 import { DependencyTrace, runDependencyTrace } from './dependency-trace';
 import { nextState, deepPick } from './util';
 import { nodeRenderer, nodeMapper, diffNodeMapper } from './object-inspector';
@@ -129,7 +129,7 @@ export class MessageView extends React.Component<Props, State> {
   }
 
   protected _renderCommands() {
-    const commands = unnest<Command>((pluck as any)('commands', this.props.selected))
+    const commands = unnest<SerializedCommand>((pluck as any)('commands', this.props.selected))
       .filter(identity);
 
     if (!commands.length) {
