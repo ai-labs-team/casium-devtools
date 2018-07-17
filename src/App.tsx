@@ -261,10 +261,10 @@ export class App extends React.Component<{}, State> {
                     this.setState({ selected: nextSelection });
                       active.timeTravel && window.messageClient({ selected: msg });
                     }}
-                >{msg.message !== null ? msg.message : `Init(${msg.name})`}
+                >
+                    {msg.message !== null ? msg.message : `Init(${msg.name})`}
                 </div>
-              ))
-              }
+              ))}
             </div>
           </div>
 
