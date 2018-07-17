@@ -205,17 +205,18 @@ export class App extends React.Component<{}, State> {
               className={'tool-button toggle-filter-button' + (active.showFilters ? ' on' : '')}
               onClick = {() => this.toggleActive('showFilters')}
             />
-            {active.showFilters ?
-                <span>
+            {active.showFilters ? (
+              <span>
                 <FontAwesome
-                    name= {active.showInit ?  'far fa-check-square' : "far fa-square"}
-                    onClick={() => this.toggleActive('showInit')}
-                    className={'tool-button toggle-Init-button' + (active.showInit ? ' on' : '')}
+                  name= {active.showInit ?  'far fa-check-square' : "far fa-square"}
+                  onClick={() => this.toggleActive('showInit')}
+                  className={'tool-button toggle-Init-button' + (active.showInit ? ' on' : '')}
                 /> Show Init
-                </span>: null
-            }
+                </span>
+            ) : null}
             </span>
           </span>
+
           <span className="panel-tools-right">
             <span className="button-group">
               <button
