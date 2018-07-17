@@ -106,7 +106,7 @@ export class Instrumenter {
       id: this._session + this._nextId(),
       ts: Date.now(),
       relay: context.relay(),
-      message: msg && msg.constructor && msg.constructor.name || `Init (${name})`,
+      message: msg && msg.constructor && msg.constructor.name || null,
       data: msg && msg.data,
       commands: serializeCmds(cmds),
       name,

@@ -26,6 +26,7 @@ interface State {
     nextState: boolean;
     relativeTime: boolean;
     replay: boolean;
+    showInit: boolean;
   },
 }
 
@@ -55,7 +56,7 @@ const extendSelection = (messages: SerializedMessage[], selected: SerializedMess
     return concat(newMessages, selected);
   }
 
-  // Message is within selection; gather first selected to message
+  // Message is within selection; gather first`Init(${name})` selected to message
   return slice(firstIdx, msgIdx + 1, messages);
 }
 
@@ -75,7 +76,8 @@ export class App extends React.Component<{}, State> {
       diffState: true,
       nextState: true,
       relativeTime: false,
-      replay: false
+      replay: false,
+      showInit: true
     }
   }
 
@@ -241,6 +243,7 @@ export class App extends React.Component<{}, State> {
                   title="Only show dependencies in Unit Tests and Message view"
                 />
               </button>
+              <button onClick = {() => this.toggleActive('showInit')}>Toggle Init</button>
             </span>
           </span>
         </div>
@@ -248,20 +251,22 @@ export class App extends React.Component<{}, State> {
         <div key="panel" className="panel-container">
           <div key="controls" className="panel left control-deck">
             <div key="message-list" className="panel-list">
-              {messages.map(msg => (
-                <div
-                  key={msg.id}
-                  className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
-                  onClick={e => {
-                    const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
-                    this.setState({ selected: nextSelection });
+              {messages.filter(function(msg) {
+                return msg.message !== null ? true : active.showInit
+              }).map(msg => (
+                      <div
+                          key={msg.id}
+                          className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
+                          onClick={e => {
+                              const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
+                              this.setState({ selected: nextSelection });
 
-                    active.timeTravel && window.messageClient({ selected: msg });
-                  }}
-                >
-                  {msg.message}
-                </div>
-              ))}
+                              active.timeTravel && window.messageClient({ selected: msg });
+                          }}
+                      >{msg.message !== null ? msg.message : `Init(${msg.name})`}
+                      </div>
+                  ))
+              }
             </div>
           </div>
 
