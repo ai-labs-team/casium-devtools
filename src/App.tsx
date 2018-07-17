@@ -259,6 +259,7 @@ export class App extends React.Component<{}, State> {
                   onClick={e => {
                     const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
                     this.setState({ selected: nextSelection });
+
                     active.timeTravel && window.messageClient({ selected: msg });
                   }}
                 >
