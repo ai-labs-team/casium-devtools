@@ -56,7 +56,7 @@ const extendSelection = (messages: SerializedMessage[], selected: SerializedMess
     return concat(newMessages, selected);
   }
 
-  // Message is within selection; gather first`Init(${name})` selected to message
+  // Message is within selection; gather first selected to message
   return slice(firstIdx, msgIdx + 1, messages);
 }
 
