@@ -216,6 +216,7 @@ export class App extends React.Component<{}, State> {
             ) : null}
             </span>
           </span>
+
           <span className="panel-tools-right">
             <span className="button-group">
               <button
