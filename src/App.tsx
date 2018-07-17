@@ -257,11 +257,12 @@ export class App extends React.Component<{}, State> {
                 <div key={msg.id}
                   className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
                   onClick={e => {
-                  const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
-                  this.setState({ selected: nextSelection });
-                    active.timeTravel && window.messageClient({ selected: msg });
-                  }}
-                >{msg.message !== null ? msg.message : `Init(${msg.name})`}</div>
+                    const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
+                    this.setState({ selected: nextSelection });
+                      active.timeTravel && window.messageClient({ selected: msg });
+                    }}
+                >{msg.message !== null ? msg.message : `Init(${msg.name})`}
+                </div>
               ))
               }
             </div>
