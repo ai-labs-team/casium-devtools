@@ -27,6 +27,7 @@ interface State {
     relativeTime: boolean;
     replay: boolean;
     showInit: boolean;
+    showFilters: boolean;
   },
 }
 
@@ -77,7 +78,8 @@ export class App extends React.Component<{}, State> {
       nextState: true,
       relativeTime: false,
       replay: false,
-      showInit: true
+      showInit: false,
+      showFilters: false,
     }
   }
 
@@ -195,8 +197,25 @@ export class App extends React.Component<{}, State> {
                 }}
               />
             ) : null}
+            <span>
+            <FontAwesome
+              key="toggle"
+              name="fas fa-filter"
+              title="Toggle init messages"
+              className={'tool-button toggle-filter-button' + (active.showFilters ? ' on' : '')}
+              onClick = {() => this.toggleActive('showFilters')}
+            />
+            {active.showFilters ?
+                <span>
+                <FontAwesome
+                    name= {active.showInit ?  'far fa-check-square' : "far fa-square"}
+                    onClick={() => this.toggleActive('showInit')}
+                    className={'tool-button toggle-Init-button' + (active.showInit ? ' on' : '')}
+                /> Show Init
+                </span>: null
+            }
+            </span>
           </span>
-
           <span className="panel-tools-right">
             <span className="button-group">
               <button
@@ -243,7 +262,6 @@ export class App extends React.Component<{}, State> {
                   title="Only show dependencies in Unit Tests and Message view"
                 />
               </button>
-              <button onClick = {() => this.toggleActive('showInit')}>Toggle Init</button>
             </span>
           </span>
         </div>
