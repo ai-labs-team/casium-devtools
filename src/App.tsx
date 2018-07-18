@@ -271,7 +271,8 @@ export class App extends React.Component<{}, State> {
           <div key="controls" className="panel left control-deck">
             <div key="message-list" className="panel-list">
               {active.showInit ? messages : messages.filter(prop('message')).map(msg => (
-                <div key={msg.id}
+                <div
+                  key={msg.id}
                   className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
                   onClick={e => {
                     const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
