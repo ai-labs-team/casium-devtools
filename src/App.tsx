@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as FontAwesome from 'react-fontawesome';
-import { concat, contains, equals, head, last, isNil, merge, slice, where } from 'ramda';
+import { concat, contains, equals, head, last, isNil, merge, prop, slice, where } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { download } from './util';
@@ -26,6 +26,8 @@ interface State {
     nextState: boolean;
     relativeTime: boolean;
     replay: boolean;
+    showInit: boolean;
+    showFilters: boolean;
   },
 }
 
@@ -75,7 +77,9 @@ export class App extends React.Component<{}, State> {
       diffState: true,
       nextState: true,
       relativeTime: false,
-      replay: false
+      replay: false,
+      showInit: true,
+      showFilters: false
     }
   }
 
@@ -193,6 +197,24 @@ export class App extends React.Component<{}, State> {
                 }}
               />
             ) : null}
+            <span>
+            <FontAwesome
+              key="toggle"
+              name="fas fa-filter"
+              title="Toggle init messages"
+              className={'tool-button toggle-filter-button' + (active.showFilters ? ' on' : '')}
+              onClick = {() => this.toggleActive('showFilters')}
+            />
+            {active.showFilters ? (
+              <span>
+                <FontAwesome
+                  name= {active.showInit ?  'far fa-check-square' : "far fa-square"}
+                  onClick={() => this.toggleActive('showInit')}
+                  className={'tool-button toggle-Init-button' + (active.showInit ? ' on' : '')}
+                /> Show Init
+                </span>
+            ) : null}
+            </span>
           </span>
 
           <span className="panel-tools-right">
@@ -248,7 +270,7 @@ export class App extends React.Component<{}, State> {
         <div key="panel" className="panel-container">
           <div key="controls" className="panel left control-deck">
             <div key="message-list" className="panel-list">
-              {messages.map(msg => (
+              {active.showInit ? messages : messages.filter(prop('message')).map(msg => (
                 <div
                   key={msg.id}
                   className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
@@ -259,7 +281,7 @@ export class App extends React.Component<{}, State> {
                     active.timeTravel && window.messageClient({ selected: msg });
                   }}
                 >
-                  {msg.message}
+                  {msg.message !== null ? msg.message : `Init (${msg.name})`}
                 </div>
               ))}
             </div>
