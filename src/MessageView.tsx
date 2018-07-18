@@ -103,7 +103,6 @@ export class MessageView extends React.Component<Props, State> {
         <div className="panel-label">Relay</div>,
         <ObjectInspector data={relay} expandLevel={0} mapper={nodeMapper} />
       ] : null;
-
       return (
         <div className="message" key={msg.id}>
           <MessageHeading

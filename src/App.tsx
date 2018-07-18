@@ -57,7 +57,7 @@ const extendSelection = (messages: SerializedMessage[], selected: SerializedMess
     return concat(newMessages, selected);
   }
 
-  // Message is within selection; gather first selected to message
+  // Message is within selection; gather first`Init(${name})` selected to message
   return slice(firstIdx, msgIdx + 1, messages);
 }
 
@@ -263,6 +263,7 @@ export class App extends React.Component<{}, State> {
                   title="Only show dependencies in Unit Tests and Message view"
                 />
               </button>
+              <button onClick = {() => this.toggleActive('showInit')}>Toggle Init</button>
             </span>
           </span>
         </div>
@@ -277,7 +278,6 @@ export class App extends React.Component<{}, State> {
                   onClick={e => {
                     const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
                     this.setState({ selected: nextSelection });
-
                     active.timeTravel && window.messageClient({ selected: msg });
                   }}
                 >
