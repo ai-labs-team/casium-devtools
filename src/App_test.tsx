@@ -100,7 +100,7 @@ context('when a message is clicked', () => {
   it('sets `state.selected` to the message that was clicked', () => {
     const wrapper = shallow(<App />);
     wrapper.setState({ messages });
-      wrapper.find('.panel-item').at(1).simulate('click', {});
+    wrapper.find('.panel-item').at(1).simulate('click', {});
 
     expect(wrapper.state().selected).to.deep.equal([{
       id: '1',
