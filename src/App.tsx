@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as FontAwesome from 'react-fontawesome';
-import { concat, contains, equals, head, last, isNil, merge, slice, where } from 'ramda';
+import { concat, contains, equals, head, last, isNil, merge, prop, slice, where } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { download } from './util';
@@ -270,9 +270,7 @@ export class App extends React.Component<{}, State> {
         <div key="panel" className="panel-container">
           <div key="controls" className="panel left control-deck">
             <div key="message-list" className="panel-list">
-              {messages.filter(function(msg) {
-                return msg.message !== null ? true : active.showInit
-              }).map(msg => (
+              {active.showInit ? messages : messages.filter(prop('message')).map(msg => (
                 <div key={msg.id}
                   className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
                   onClick={e => {
@@ -282,7 +280,7 @@ export class App extends React.Component<{}, State> {
                     active.timeTravel && window.messageClient({ selected: msg });
                   }}
                 >
-                  {msg.message !== null ? msg.message : `Init(${msg.name})`}
+                  {msg.message !== null ? msg.message : `Init (${msg.name})`}
                 </div>
               ))}
             </div>
