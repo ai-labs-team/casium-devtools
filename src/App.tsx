@@ -78,7 +78,7 @@ export class App extends React.Component<{}, State> {
       nextState: true,
       relativeTime: false,
       replay: false,
-      showInit: true,
+      showInit: false,
       showFilters: false
     }
   }
@@ -270,7 +270,7 @@ export class App extends React.Component<{}, State> {
         <div key="panel" className="panel-container">
           <div key="controls" className="panel left control-deck">
             <div key="message-list" className="panel-list">
-              {active.showInit ? messages : messages.filter(prop('message')).map(msg => (
+              {(active.showInit ? messages : messages.filter(prop('message'))).map(msg => (
                 <div
                   key={msg.id}
                   className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
