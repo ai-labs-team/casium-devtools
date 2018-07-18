@@ -79,7 +79,7 @@ export class App extends React.Component<{}, State> {
       relativeTime: false,
       replay: false,
       showInit: false,
-      showFilters: false,
+      showFilters: false
     }
   }
 
