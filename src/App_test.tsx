@@ -85,8 +85,7 @@ context('when a new message is received', () => {
 const messages = [{
   id: '0'
 }, {
-  id: '1',
-    message: "test"
+  id: '1'
 }, {
   id: '2',
 }, {
