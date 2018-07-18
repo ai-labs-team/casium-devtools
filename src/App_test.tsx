@@ -83,13 +83,17 @@ context('when a new message is received', () => {
 });
 
 const messages = [{
-  id: '0'
+  id: '0',
+  message: '0'
 }, {
-  id: '1'
+  id: '1',
+  message: '1'
 }, {
   id: '2',
+  message: '2'
 }, {
-  id: '3'
+  id: '3',
+  message: '3'
 }];
 
 context('when a message is clicked', () => {
@@ -99,7 +103,8 @@ context('when a message is clicked', () => {
     wrapper.find('.panel-item').at(1).simulate('click', {});
 
     expect(wrapper.state().selected).to.deep.equal([{
-      id: '1'
+      id: '1',
+      message: '1'
     }]);
   });
 
@@ -117,7 +122,8 @@ context('when a message is clicked', () => {
 
       expect(global.window.messageClient.calledWith({
         selected: {
-          id: '1'
+          id: '1',
+          message: '1'
         }
       })).to.equal(true);
     });
@@ -131,43 +137,56 @@ context('when a message is shift-clicked', () => {
 
     wrapper.find('.panel-item').at(1).simulate('click', { shiftKey: true });
     expect(wrapper.state().selected).to.deep.equal([{
-      id: '1'
+      id: '1',
+      message: '1'
     }]);
 
     wrapper.find('.panel-item').at(2).simulate('click', { shiftKey: true });
     expect(wrapper.state().selected).to.deep.equal([{
-      id: '1'
+      id: '1',
+      message: '1'
     }, {
-      id: '2'
+      id: '2',
+      message: '2'
     }]);
 
     wrapper.find('.panel-item').at(0).simulate('click', { shiftKey: true });
     expect(wrapper.state().selected).to.deep.equal([{
-      id: '0'
+      id: '0',
+      message: '0'
     }, {
-      id: '1'
+      id: '1',
+      message: '1'
     }, {
-      id: '2'
+      id: '2',
+      message: '2'
     }]);
 
     wrapper.find('.panel-item').at(3).simulate('click', { shiftKey: true });
     expect(wrapper.state().selected).to.deep.equal([{
-      id: '0'
+      id: '0',
+      message: '0'
     }, {
-      id: '1'
+      id: '1',
+      message: '1'
     }, {
-      id: '2'
+      id: '2',
+      message: '2'
     }, {
-      id: '3'
+      id: '3',
+      message: '3'
     }]);
 
     wrapper.find('.panel-item').at(2).simulate('click', { shiftKey: true });
     expect(wrapper.state().selected).to.deep.equal([{
-      id: '0'
+      id: '0',
+      message: '0'
     }, {
-      id: '1'
+      id: '1',
+      message: '1'
     }, {
-      id: '2'
+      id: '2',
+      message: '2'
     }]);
   });
 });
@@ -226,16 +245,20 @@ describe('download button', () => {
     expect((util.download as sinon.SinonSpy).calledWith({
       data: `[
   {
-    "id": "0"
+    "id": "0",
+    "message": "0"
   },
   {
-    "id": "1"
+    "id": "1",
+    "message": "1"
   },
   {
-    "id": "2"
+    "id": "2",
+    "message": "2"
   },
   {
-    "id": "3"
+    "id": "3",
+    "message": "3"
   }
 ]`,
       filename: 'message-log.json'
