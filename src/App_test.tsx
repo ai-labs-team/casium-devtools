@@ -85,7 +85,8 @@ context('when a new message is received', () => {
 const messages = [{
   id: '0'
 }, {
-  id: '1'
+  id: '1',
+    message: "test"
 }, {
   id: '2',
 }, {
@@ -96,7 +97,7 @@ context('when a message is clicked', () => {
   it('sets `state.selected` to the message that was clicked', () => {
     const wrapper = shallow(<App />);
     wrapper.setState({ messages });
-    wrapper.find('.panel-item').at(1).simulate('click', {});
+      wrapper.find('.panel-item').at(1).simulate('click', {}); ////////////////////////////////
 
     expect(wrapper.state().selected).to.deep.equal([{
       id: '1'
@@ -113,7 +114,7 @@ context('when a message is clicked', () => {
         }
       });
 
-      wrapper.find('.panel-item').at(1).simulate('click', {});
+      wrapper.find('.panel-item').at(1).simulate('click', {}); //////////////////////////////
 
       expect(global.window.messageClient.calledWith({
         selected: {
@@ -129,7 +130,7 @@ context('when a message is shift-clicked', () => {
     const wrapper = shallow(<App />);
     wrapper.setState({ messages });
 
-    wrapper.find('.panel-item').at(1).simulate('click', { shiftKey: true });
+    wrapper.find('.panel-item').at(1).simulate('click', { shiftKey: true }); ////////////////
     expect(wrapper.state().selected).to.deep.equal([{
       id: '1'
     }]);
