@@ -198,22 +198,19 @@ export class App extends React.Component<{}, State> {
               />
             ) : null}
             <span>
-            <FontAwesome
-              key="toggle"
-              name="fas fa-filter"
-              title="Toggle init messages"
-              className={'tool-button toggle-filter-button' + (active.showFilters ? ' on' : '')}
-              onClick = {() => this.toggleActive('showFilters')}
-            />
-            {active.showFilters ? (
-              <span>
-                <FontAwesome
-                  name= {active.showInit ?  'far fa-check-square' : "far fa-square"}
-                  onClick={() => this.toggleActive('showInit')}
-                  className={'tool-button toggle-Init-button' + (active.showInit ? ' on' : '')}
-                /> Show Init
-                </span>
-            ) : null}
+              <FontAwesome
+                key="toggle"
+                name="fas fa-filter"
+                title={active.showFilters ? 'Hide filters' : 'Show filters'}
+                className={'tool-button toggle-filter-button' + (active.showFilters ? ' on' : '')}
+                onClick={() => this.toggleActive('showFilters')}
+              />
+              {active.showFilters ? (
+                <label htmlFor="show-init" title="Show no-op init messages">
+                  <input type="checkbox" onClick={() => this.toggleActive('showInit')} id="show-init" />
+                  Show Init
+                </label>
+              ) : null}
             </span>
           </span>
 
