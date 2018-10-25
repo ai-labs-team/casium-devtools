@@ -21,7 +21,9 @@ html, body {
 
 .panel {
   align-items: stretch;
-  overflow-y: auto;
+}
+.panel.scrollable {
+  overflow-y: scroll;
 }
 .panel.control-deck {
   background: rgb(243, 243, 243);

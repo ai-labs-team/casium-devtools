@@ -268,7 +268,7 @@ export class App extends React.Component<{}, State> {
         </div>
 
         <div key="panel" className="panel-container">
-          <div key="controls" className="panel left control-deck">
+          <div key="controls" className="panel left control-deck scrollable">
             <div key="message-list" className="panel-list">
               {(active.showInit ? messages : messages.filter(prop('message'))).map(msg => (
                 <div
@@ -287,7 +287,7 @@ export class App extends React.Component<{}, State> {
             </div>
           </div>
 
-          <div key="panel-head" className="panel content with-heading">
+          <div key="panel-head" className="panel content scrollable with-heading">
             <MessageView
               selected={selected}
               useDependencyTrace={active.dependencyTrace}
