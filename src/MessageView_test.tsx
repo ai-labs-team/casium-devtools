@@ -7,7 +7,7 @@ import { MessageView } from './MessageView';
 import * as dependencyTrace from './dependency-trace';
 import { setImmediate } from 'timers';
 
-const getState = (wrapper: any): any => getState(wrapper) as any;
+const getState = (wrapper: any): any => wrapper.state() as any;
 
 const messages = [{
   id: '0',

@@ -14,7 +14,7 @@ declare var global: {
   };
 };
 
-const getState = (wrapper: any): any => getState(wrapper) as any;
+const getState = (wrapper: any): any => wrapper.state() as any;
 
 beforeEach(() => {
   global.window = {
