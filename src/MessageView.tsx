@@ -18,7 +18,7 @@ import './MessageView.scss';
  * avoid this, use the awful hack of setting the default expand level to an
  * artifically large number.
  */
-const DIFF_EXPAND_LEVEL = 100;
+const DIFF_EXPAND_LEVEL = 1;
 
 interface Props {
   selected: SerializedMessage[];
@@ -84,7 +84,7 @@ export class MessageView extends React.Component<Props, State> {
     const { unitTest } = this.state;
 
     return (
-      <div className={'unit-test-content' + (showUnitTest ? ' on' : '')}>
+      <div className={'unit-test-content' + (showUnitTest ? ' on' : '')} key='unit-test'>
         {unitTest || 'Generating Unit Test...'}
       </div>
     );
@@ -106,11 +106,7 @@ export class MessageView extends React.Component<Props, State> {
 
       return (
         <div className="message" key={msg.id}>
-          <MessageHeading
-            msg={msg}
-            relativeTime={relativeTime}
-            onToggle={this._toggleRelativeTime}
-          />
+          <MessageHeading msg={msg} relativeTime={relativeTime} onToggle={this._toggleRelativeTime} />
           <div className="message-properties">
             <div className="panel-label">Data</div>
             <ObjectInspector data={data} expandLevel={0} mapper={nodeMapper} />
