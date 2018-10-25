@@ -7,6 +7,8 @@ import { MessageView } from './MessageView';
 import * as dependencyTrace from './dependency-trace';
 import { setImmediate } from 'timers';
 
+const getState = (wrapper: any): any => getState(wrapper) as any;
+
 const messages = [{
   id: '0',
   name: 'TestContainer',
@@ -125,7 +127,7 @@ context('when `useDependencyTrace` is `true`', () => {
         wrapper.setProps({ useDependencyTrace: false });
 
         setImmediate(() => {
-          expect(wrapper.state().dependencyTraces).to.deep.equal([])
+          expect(getState(wrapper).dependencyTraces).to.deep.equal([])
           done();
         })
       });
@@ -139,7 +141,7 @@ context('when `useDependencyTrace` is `true`', () => {
       wrapper.setProps({ useDependencyTrace: true });
 
       setImmediate(() => {
-        expect(wrapper.state().dependencyTraces).to.deep.equal([{
+        expect(getState(wrapper).dependencyTraces).to.deep.equal([{
           message: [['step']],
           relay: []
         }, {
@@ -163,7 +165,7 @@ context('when `useDependencyTrace` is `true`', () => {
         wrapper.setProps({ selected: messages.slice(0, 2) });
 
         setImmediate(() => {
-          expect(wrapper.state().dependencyTraces).to.have.length(2);
+          expect(getState(wrapper).dependencyTraces).to.have.length(2);
           done();
         });
       });
@@ -185,7 +187,7 @@ context('when `showUnitTest` is `true`', () => {
       wrapper.setProps({ showUnitTest: true });
 
       setImmediate(() => {
-        expect(wrapper.state().unitTest).to.contain('should respond to Increment (x2) and Save messages');
+        expect(getState(wrapper).unitTest).to.contain('should respond to Increment (x2) and Save messages');
         done();
       })
     });
@@ -197,7 +199,7 @@ context('when `showUnitTest` is `true`', () => {
       wrapper.setProps({ selected: messages.slice(0, 2) });
 
       setImmediate(() => {
-        expect(wrapper.state().unitTest).to.contain('should respond to Increment (x2) messages');
+        expect(getState(wrapper).unitTest).to.contain('should respond to Increment (x2) messages');
         done();
       })
     });

@@ -113,6 +113,10 @@ export const generateUnitTest = (messages: SerializedMessage[], traces: Dependen
     message: []
   } as DependencyTrace) : undefined;
 
+  if (!messages.length) {
+    return '';
+  }
+
   const pairs = messages.map((message, index) => ([message, traces[index]])) as MessageTracePair[];
 
   const [firstMsg] = head(pairs) as MessageTracePair;

@@ -11,7 +11,7 @@ interface Props {
 }
 
 export class MessageHeading extends React.Component<Props> {
-  protected _interval?: NodeJS.Timer;
+  protected _interval?: NodeJS.Timeout;
 
   render() {
     const { name, ts } = this.props.msg;
@@ -34,7 +34,7 @@ export class MessageHeading extends React.Component<Props> {
   }
 
   protected _setUpdateInterval() {
-    this._interval = setInterval(() => this.forceUpdate(), REFRESH_INTERVAL);
+    this._interval = setInterval(() => this.forceUpdate(), REFRESH_INTERVAL) as any as NodeJS.Timeout;
   }
 
   protected _clearUpdateInterval() {

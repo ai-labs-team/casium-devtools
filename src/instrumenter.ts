@@ -1,6 +1,7 @@
 import { onMessage, withStateManager, OnMessageCallback, StateManagerCallback } from 'casium/instrumentation';
 import { safeStringify, safeParse } from 'casium/util';
 import { GenericObject } from 'casium/core';
+import AppMessage from 'casium/message';
 import StateManager from 'casium/runtime/state_manager';
 import ExecContext, { cmdName } from 'casium/runtime/exec_context';
 import { filter, flatten, is, lensPath, map, pipe, set } from 'ramda';
@@ -57,7 +58,7 @@ export type InboundMessage = {
 const serialize = map<GenericObject, GenericObject>(pipe(safeStringify, safeParse)) as any;
 
 const serializeCmds: (cmds: any[]) => SerializedCommand[] =
-  pipe(flatten as any, filter(is(Object)), map<any, SerializedCommand[]>(cmd => [cmdName(cmd), cmd.data]));
+  pipe(flatten as any, filter(is(Object)), map((cmd: AppMessage) => [cmdName(cmd), cmd.data]) as any);
 
 /**
  * The DevTools Instrumenter runs in the same context as the Inspected Page, and
