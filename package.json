@@ -13,7 +13,7 @@
     "watch-tests": "nodemon -e ts,tsx -x yarn unit-test"
   },
   "author": "",
-  "license": "BSD",
+  "license": "Apache-2.0",
   "dependencies": {
     "axios": "^0.18.0",
     "copy-to-clipboard": "^3.0.8",
@@ -54,7 +54,7 @@
     "ignore-styles": "^5.0.1",
     "mocha": "^5.0.1",
     "node-sass": "^4.7.2",
-    "nodemon": "^1.15.1",
+    "nodemon": "^1.18.4",
     "nyc": "^11.4.1",
     "react-test-renderer": "15",
     "sass-loader": "^6.0.6",

@@ -14,6 +14,8 @@ declare var global: {
   };
 };
 
+const getState = (wrapper: any): any => wrapper.state() as any;
+
 beforeEach(() => {
   global.window = {
     LISTENERS: [],
@@ -28,7 +30,7 @@ context('when a new message is received', () => {
     const message = { id: '0', from: 'Arch' };
     global.window.LISTENERS[0][1](message);
 
-    expect(wrapper.state().messages).to.deep.equal([message]);
+    expect(getState(wrapper).messages).to.deep.equal([message]);
   });
 
   it('un-sets `state.haltForReplay` if currently set', () => {
@@ -37,7 +39,7 @@ context('when a new message is received', () => {
     wrapper.setState({ haltForReplay: true });
 
     global.window.LISTENERS[1][1](message);
-    expect(wrapper.state().haltForReplay).to.equal(false);
+    expect(getState(wrapper).haltForReplay).to.equal(false);
   });
 
   it('sets `state.haltForReplay` to `true` and replays currently selected message', () => {
@@ -47,14 +49,14 @@ context('when a new message is received', () => {
       messages: [{ id: '1' }],
       selected: [{ id: '1' }],
       active: {
-        ...wrapper.state().active,
+        ...getState(wrapper).active,
         replay: true
       }
     });
 
     global.window.LISTENERS[2].forEach(listener => listener(message));
 
-    expect(wrapper.state().haltForReplay).to.equal(true);
+    expect(getState(wrapper).haltForReplay).to.equal(true);
     expect(global.window.messageClient.calledWith({ selected: { id: '1' } })).to.equal(true);
   });
 
@@ -67,14 +69,14 @@ context('when a new message is received', () => {
         selected: [{ id: '1' }],
         haltForReplay: true,
         active: {
-          ...wrapper.state().active,
+          ...getState(wrapper).active,
           clearOnReload: true
         }
       });
 
       global.window.LISTENERS[2].forEach(listener => listener(message));
 
-      const state = wrapper.state();
+      const state = getState(wrapper);
       expect(state.haltForReplay).to.equal(false);
       expect(state.messages).to.deep.equal([]);
       expect(state.selected).to.deep.equal([]);
@@ -102,7 +104,7 @@ context('when a message is clicked', () => {
     wrapper.setState({ messages });
     wrapper.find('.panel-item').at(1).simulate('click', {});
 
-    expect(wrapper.state().selected).to.deep.equal([{
+    expect(getState(wrapper).selected).to.deep.equal([{
       id: '1',
       message: '1'
     }]);
@@ -136,13 +138,13 @@ context('when a message is shift-clicked', () => {
     wrapper.setState({ messages });
 
     wrapper.find('.panel-item').at(1).simulate('click', { shiftKey: true });
-    expect(wrapper.state().selected).to.deep.equal([{
+    expect(getState(wrapper).selected).to.deep.equal([{
       id: '1',
       message: '1'
     }]);
 
     wrapper.find('.panel-item').at(2).simulate('click', { shiftKey: true });
-    expect(wrapper.state().selected).to.deep.equal([{
+    expect(getState(wrapper).selected).to.deep.equal([{
       id: '1',
       message: '1'
     }, {
@@ -151,7 +153,7 @@ context('when a message is shift-clicked', () => {
     }]);
 
     wrapper.find('.panel-item').at(0).simulate('click', { shiftKey: true });
-    expect(wrapper.state().selected).to.deep.equal([{
+    expect(getState(wrapper).selected).to.deep.equal([{
       id: '0',
       message: '0'
     }, {
@@ -163,7 +165,7 @@ context('when a message is shift-clicked', () => {
     }]);
 
     wrapper.find('.panel-item').at(3).simulate('click', { shiftKey: true });
-    expect(wrapper.state().selected).to.deep.equal([{
+    expect(getState(wrapper).selected).to.deep.equal([{
       id: '0',
       message: '0'
     }, {
@@ -178,7 +180,7 @@ context('when a message is shift-clicked', () => {
     }]);
 
     wrapper.find('.panel-item').at(2).simulate('click', { shiftKey: true });
-    expect(wrapper.state().selected).to.deep.equal([{
+    expect(getState(wrapper).selected).to.deep.equal([{
       id: '0',
       message: '0'
     }, {
@@ -197,7 +199,7 @@ describe('clear button', () => {
     wrapper.setState({ messages });
 
     wrapper.find('.clear-messages-button').simulate('click', {});
-    expect(wrapper.state().messages).to.deep.equal([]);
+    expect(getState(wrapper).messages).to.deep.equal([]);
   });
 
   it('toggles `active.clearOnReload` when meta- or ctrl-clicked', () => {
@@ -205,12 +207,12 @@ describe('clear button', () => {
     wrapper.setState({ messages });
 
     wrapper.find('.clear-messages-button').simulate('click', { metaKey: true });
-    const state = wrapper.state();
+    const state = getState(wrapper);
     expect(state.messages).to.deep.equal(messages);
     expect(state.active.clearOnReload).to.equal(true);
 
     wrapper.find('.clear-messages-button').simulate('click', { ctrlKey: true });
-    expect(wrapper.state().active.clearOnReload).to.equal(false);
+    expect(getState(wrapper).active.clearOnReload).to.equal(false);
   });
 })
 
@@ -219,7 +221,7 @@ describe('time travel button', () => {
     const wrapper = shallow(<App />);
     wrapper.find('.time-travel-button').simulate('click');
 
-    expect(wrapper.state().active.timeTravel).to.equal(true);
+    expect(getState(wrapper).active.timeTravel).to.equal(true);
   });
 });
 
@@ -228,7 +230,7 @@ describe('unit test button', () => {
     const wrapper = shallow(<App />);
     wrapper.find('.unit-test-button').simulate('click');
 
-    expect(wrapper.state().active.unitTest).to.equal(true);
+    expect(getState(wrapper).active.unitTest).to.equal(true);
   });
 });
 
@@ -277,6 +279,6 @@ describe('replay button', () => {
     wrapper.setState({ messages, selected: messages });
     wrapper.find('.replay-button').simulate('click');
 
-    expect(wrapper.state().active.replay).to.equal(true);
+    expect(getState(wrapper).active.replay).to.equal(true);
   });
 })
