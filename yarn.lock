@@ -3251,6 +3251,11 @@ jsesc@~0.5.0:
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
   integrity sha1-597mbjXW/Bb3EP6R1c9p9w8IkR0=
 
+json-delta@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/json-delta/-/json-delta-1.0.1.tgz#16b78880a310421b71ddfdf7c790ebed9238ded4"
+  integrity sha1-FreIgKMQQhtx3f33x5Dr7ZI43tQ=
+
 json-diff@^0.5.2:
   version "0.5.3"
   resolved "https://registry.yarnpkg.com/json-diff/-/json-diff-0.5.3.tgz#6ad1fe9d31c3dc154e51b50dcd177af5cbd46f98"

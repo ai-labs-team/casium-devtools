@@ -43,4 +43,4 @@ new Instrumenter().addBackend('WebExtension', ({ connect, disconnect, send }) =>
   return message => {
     window.postMessage(message, '*');
   }
-})
+});

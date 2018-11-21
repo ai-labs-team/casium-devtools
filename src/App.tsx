@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as FontAwesome from 'react-fontawesome';
-import { concat, contains, equals, head, last, isNil, merge, prop, slice, where } from 'ramda';
+import { concat, contains, equals, head, last, isNil, merge, prop, slice, where, whereEq } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { download } from './util';
@@ -28,7 +28,7 @@ interface State {
     replay: boolean;
     showInit: boolean;
     showFilters: boolean;
-  },
+  };
 }
 
 /**
@@ -91,11 +91,11 @@ export class App extends React.Component<{}, State> {
 
     window.LISTENERS.push([
       where({ from: equals('CasiumDevToolsPanel'), state: isNil }),
-      message => this.state.haltForReplay && this.setState({ haltForReplay: false })
+      () => this.state.haltForReplay && this.setState({ haltForReplay: false })
     ]);
 
     window.LISTENERS.push([
-      where({ from: equals('CasiumDevToolsInstrumenter'), state: equals('initialized') }),
+      whereEq({ from: 'CasiumDevToolsInstrumenter', state: 'initialized' }),
       () => this.state.active.replay && this.setState({ haltForReplay: true }),
       () => this.state.active.clearOnReload && this.clearMessages(),
       () => this.state.active.replay && window.messageClient({ selected: this.state.selected[0] }),

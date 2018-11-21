@@ -43,7 +43,7 @@ browser.runtime.onConnect.addListener(port => {
     queues[port.name] = [];
   }
 
-  const portListener = function(message: any, sender: browser.runtime.Port, sendResponse: (response?: any) => void) {
+  const portListener = function (message: any, sender: browser.runtime.Port) {
     console.log("%c[Client Message]: " + sender.name, "font-weight: bold; color: #e6b800;", message);
 
     if (!channels[sender.name]) {
@@ -68,12 +68,12 @@ browser.runtime.onConnect.addListener(port => {
 
   port.postMessage({ info: "Client connected to background", name: port.name });
 
-  port.onDisconnect.addListener(function() {
+  port.onDisconnect.addListener(function () {
     broadcast({ state: 'disconnected' });
     console.log(`%c[Client Disconnected]: ${port.name}`, "font-weight: bold; color: #cc2900;");
     (port.onMessage.removeListener as any)(portListener);
     delete ports[port.name];
   });
 
-  (port.onMessage.addListener as any)(portListener);
+  port.onMessage.addListener(portListener as any);
 });

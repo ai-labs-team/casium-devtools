@@ -6,7 +6,9 @@ import { fromMatches } from './util';
  */
 const clientScript = document.createElement('script');
 clientScript.src = browser.extension.getURL('injected-script.js');
-(document.head || document.documentElement).appendChild(clientScript);
+const doc = (document.head || document.documentElement);
+
+doc && doc.appendChild(clientScript);
 
 const isAllowedPortSender = fromMatches([
   'CasiumDevToolsPanel',
