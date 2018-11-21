@@ -51,6 +51,17 @@ export type SerializedMessage = {
   commands?: SerializedCommand[];
 }
 
+export type StoredMessage = {
+  id: string;
+  container: string;
+  context: string;
+  ts: number;
+  name: string;
+  path: string[];
+  delta: any[];
+  commands: SerializedCommand[];
+};
+
 export type InboundMessage = {
   selected: SerializedMessage
 }
