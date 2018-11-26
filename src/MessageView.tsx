@@ -1,24 +1,17 @@
 import * as React from 'react';
 import { ObjectInspector } from 'react-inspector';
 import { unnest, identity, last, pluck } from 'ramda';
-import { diff } from 'json-diff';
+import { diff } from '@warrenseymour/json-delta';
+import { DeltaInspector } from '@fountainhead/react-json-delta-inspector';
 
 import { SerializedMessage, SerializedCommand } from './instrumenter';
 import { DependencyTrace, runDependencyTrace } from './dependency-trace';
 import { nextState, deepPick } from './util';
-import { nodeRenderer, nodeMapper, diffNodeMapper } from './object-inspector';
+import { nodeMapper } from './object-inspector';
 import { generateUnitTest } from './test-generator';
 import { MessageHeading } from './MessageHeading';
 
 import './MessageView.scss';
-
-/**
- * When viewing an Object diff, expanded nodes cause rendering errors if the
- * '__old' and '__new' values would appear 'below' the nesting boundary. To
- * avoid this, use the awful hack of setting the default expand level to an
- * artifically large number.
- */
-const DIFF_EXPAND_LEVEL = 1;
 
 interface Props {
   selected: SerializedMessage[];
@@ -171,16 +164,11 @@ export class MessageView extends React.Component<Props, State> {
     const { prev } = selected[0];
     const next = nextState(last(selected) as SerializedMessage);
 
-    const diffMap = diff(prev, next);
+    const delta = diff(prev, next);
 
-    const item = diffMap === undefined ? <em style={{ color: 'lightgray' }}>No Changes</em> : (
-      <ObjectInspector
-        data={diffMap}
-        expandLevel={DIFF_EXPAND_LEVEL}
-        nodeRenderer={nodeRenderer}
-        mapper={diffNodeMapper}
-      />
-    );
+    const item = delta ?
+      <DeltaInspector {...{ prev, delta }} /> :
+      <em style={{ color: 'lightgray' }}>No Changes</em>;
 
     return (
       <div className="diff-state">
