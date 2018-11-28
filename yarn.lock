@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@fountainhead/react-json-delta-inspector@1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@fountainhead/react-json-delta-inspector/-/react-json-delta-inspector-1.1.0.tgz#583259f0b075c1a4e8b3192b758b114c995970a2"
+"@fountainhead/react-json-delta-inspector@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@fountainhead/react-json-delta-inspector/-/react-json-delta-inspector-1.2.0.tgz#733a0a320f35ff3edddd85bdfc8532764005a60c"
   dependencies:
     ramda "0.25.x"
     react-inspector "2.3.0"

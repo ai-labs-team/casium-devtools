@@ -10,13 +10,16 @@ describe('generateUnitTest()', () => {
       message: 'Increment',
       path: [],
       data: { step: 1, type: 'click' },
-      prev: { count: 0 },
-      next: { count: 1 },
+      //prev: { count: 0 },
+      //next: { count: 1 },
       relay: {}
     } as any;
 
+    const initial = { count: 0 };
+    const final = { count: 1 };
+
     it('generates a basic test', () => {
-      const result = generateUnitTest([increment], []);
+      const result = generateUnitTest([increment], initial, final, []);
 
       expect(result).to.equal([
         `it('should respond to Increment messages', () => {`,
@@ -33,7 +36,7 @@ describe('generateUnitTest()', () => {
       const relay = { foo: 'bar' };
 
       it('passes as `relay` when creating isolated container', () => {
-        const result = generateUnitTest([{ ...increment, relay }], []);
+        const result = generateUnitTest([{ ...increment, relay }], initial, final, []);
 
         expect(result).to.equal([
           `it('should respond to Increment messages', () => {`,
@@ -55,15 +58,16 @@ describe('generateUnitTest()', () => {
         message: 'Save',
         path: [],
         data: {},
-        prev: { count: 1 },
-        next: { count: 1 },
         commands: [
           ['LocalStorage.Write', { value: 1 }]
         ]
       } as any;
 
+      const initial = { count: 1 };
+      const final = { count: 1 };
+
       it('assigns result of `dispatch` to `container` and makes assertions on it', () => {
-        const result = generateUnitTest([save], []);
+        const result = generateUnitTest([save], initial, final, []);
 
         expect(result).to.equal([
           `it('should respond to Save messages', () => {`,
@@ -85,17 +89,6 @@ describe('generateUnitTest()', () => {
       const incrementPath = {
         ...increment,
         path: ['counter'],
-        prev: {
-          counter: {
-            value: 0
-          },
-          flag: {
-            value: false
-          }
-        },
-        next: {
-          value: 1
-        },
         relay: {
           foo: 'bar'
         }
@@ -115,8 +108,18 @@ describe('generateUnitTest()', () => {
         ]
       } as any;
 
+      const initial = {
+        counter: { value: 0 },
+        flag: { value: false }
+      };
+
+      const final = {
+        counter: { value: 1 },
+        flag: { value: false }
+      };
+
       it('only picks dependent properties in state, relay and message data', () => {
-        const result = generateUnitTest([incrementPath], [trace]);
+        const result = generateUnitTest([incrementPath], initial, final, [trace]);
 
         expect(result).to.equal([
           `it('should respond to Increment messages', () => {`,
@@ -143,36 +146,31 @@ describe('generateUnitTest()', () => {
       message: 'Increment',
       path: [],
       data: { step: 1, type: 'click' },
-      prev: { count: 0 },
-      next: { count: 1 },
       relay: {}
     }, {
       name: 'TestContainer',
       message: 'Increment',
       path: [],
       data: { step: 1, type: 'click' },
-      prev: { count: 1 },
-      next: { count: 2 },
       relay: {}
     }, {
       name: 'TestContainer',
       message: 'Save',
       path: [],
       data: {},
-      prev: { count: 2 },
-      next: { count: 2 },
       relay: {}
     }, {
       name: 'TestContainer',
       message: 'Decrement',
       path: [],
-      data: { step: 2, type: 'click' },
-      prev: { count: 2, xs: ['a', 'b'] },
-      next: { count: 0, xs: ['a', 'b'] }
+      data: { step: 2, type: 'click' }
     }] as any[];
 
+    const initial = { count: 0 };
+    const final = { count: 0, xs: ['a', 'b'] };
+
     it('generates a basic test', () => {
-      const result = generateUnitTest(messages, []);
+      const result = generateUnitTest(messages, initial, final, []);
       expect(result).to.equal([
         `it('should respond to Increment (x2), Save and Decrement messages', () => {`,
         `  const container = isolate(TestContainer);`,
@@ -194,7 +192,14 @@ describe('generateUnitTest()', () => {
 
     context('when messages have `relay` properties', () => {
       it('uses first message relay property when creating isolated container', () => {
-        const result = generateUnitTest(messages.map((msg, index) => ({ ...msg, relay: { 'foo': index } })), []);
+        const relayMsgs = messages.map((msg, index) => ({
+          ...msg,
+          relay: {
+            foo: index
+          }
+        }));
+
+        const result = generateUnitTest(relayMsgs, initial, final, []);
 
         expect(result).to.equal([
           `it('should respond to Increment (x2), Save and Decrement messages', () => {`,
@@ -228,7 +233,7 @@ describe('generateUnitTest()', () => {
         relay: [['foo']],
         message: [['step']]
       }, {
-        model: [['count']],
+        model: [['count'], ['xs']],
         relay: [['foo']],
         message: [['step']]
       }, {
@@ -238,7 +243,15 @@ describe('generateUnitTest()', () => {
       }] as any[];
 
       it('only picks dependent properties in initial state, relay and message data', () => {
-        const result = generateUnitTest(messages.map((msg, index) => ({ ...msg, relay: { 'foo': index, baz: 'quux' } })), traces);
+        const relayMsgs = messages.map((msg, index) => ({
+          ...msg,
+          relay: {
+            foo: index,
+            baz: 'quux'
+          }
+        }));
+
+        const result = generateUnitTest(relayMsgs, initial, final, traces);
 
         expect(result).to.equal([
           `it('should respond to Increment (x2), Save and Decrement messages', () => {`,
@@ -256,122 +269,6 @@ describe('generateUnitTest()', () => {
           `  expect(container.state()).to.deep.equal({`,
           `    count: 0,`,
           `    xs: ["a", "b"]`,
-          `  });`,
-          `});`
-        ].join('\n'));
-      });
-    });
-  });
-
-  context('when multiple messages with different paths are selected', () => {
-    const messages = [{
-      name: 'TestContainer',
-      message: 'Increment',
-      path: ['counter'],
-      data: { step: 1, type: 'click' },
-      prev: {
-        counter: { value: 0 },
-        flag: { value: false }
-      },
-      next: { value: 1 },
-      relay: {}
-    }, {
-      name: 'TestContainer',
-      message: 'Increment',
-      path: ['counter'],
-      data: { step: 1, type: 'click' },
-      prev: {
-        counter: { value: 1 },
-        flag: { value: false }
-      },
-      next: { value: 2 },
-      relay: {}
-    }, {
-      name: 'TestContainer',
-      message: 'Toggle',
-      path: ['flag'],
-      data: {},
-      prev: {
-        counter: { value: 1 },
-        flag: { value: false }
-      },
-      next: { value: true },
-      relay: {}
-    }, {
-      name: 'TestContainer',
-      message: 'Decrement',
-      path: ['counter'],
-      data: { step: 2, type: 'click' },
-      prev: {
-        counter: { value: 2 },
-        flag: { value: true }
-      },
-      next: { value: 0 },
-    }] as any[];
-
-    it('generates a basic test', () => {
-      const result = generateUnitTest(messages, []);
-      expect(result).to.equal([
-        `it('should respond to Increment (x2), Toggle and Decrement messages', () => {`,
-        `  const container = isolate(TestContainer);`,
-        `  container.push({`,
-        `    counter: {value: 0},`,
-        `    flag: {value: false}`,
-        `  });`,
-        `  container.dispatch(`,
-        `    new Increment({step: 1, type: "click"}),`,
-        `    new Increment({step: 1, type: "click"}),`,
-        `    new Toggle({}),`,
-        `    new Decrement({step: 2, type: "click"})`,
-        `  );`,
-        '',
-        `  expect(container.state()).to.deep.equal({`,
-        `    counter: {value: 0},`,
-        `    flag: {value: true}`,
-        `  });`,
-        `});`
-      ].join('\n'));
-    });
-
-    context('when dependency traces are available for each message', () => {
-      const traces = [{
-        model: [['counter', 'value']],
-        relay: [[]],
-        message: [['step']]
-      }, {
-        model: [['counter', 'value']],
-        relay: [[]],
-        message: [['step']]
-      }, {
-        model: [['flag', 'value']],
-        relay: [[]],
-        message: [['step']]
-      }, {
-        model: [['counter', 'value']],
-        relay: [[]],
-        message: [['step']]
-      }] as any[];
-
-      it('only picks dependent properties in initial state, relay and message data', () => {
-        const result = generateUnitTest(messages, traces);
-
-        expect(result).to.equal([
-          `it('should respond to Increment (x2), Toggle and Decrement messages', () => {`,
-          `  const container = isolate(TestContainer);`,
-          `  container.push({`,
-          `    counter: {value: 0},`,
-          `    flag: {value: false}`,
-          `  });`,
-          `  container.dispatch(`,
-          `    new Increment({step: 1}),`,
-          `    new Increment({step: 1}),`,
-          `    new Toggle({}),`,
-          `    new Decrement({step: 2})`,
-          `  );`,
-          '',
-          `  expect(container.state()).to.deep.equal({`,
-          `    counter: {value: 0},`,
-          `    flag: {value: true}`,
           `  });`,
           `});`
         ].join('\n'));

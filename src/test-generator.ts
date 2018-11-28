@@ -1,5 +1,6 @@
+import { GenericObject } from 'casium';
 import * as hjson from 'hjson';
-import { any, concat, head, keys, last, lensPath, mergeWith, pipe, set, uniq } from 'ramda';
+import { any, concat, head, keys, mergeWith, pipe, uniq } from 'ramda';
 
 import { SerializedMessage, SerializedCommand } from './instrumenter';
 import { DependencyTrace } from './dependency-trace';
@@ -106,7 +107,15 @@ const expectCommands = (pairs: MessageTracePair[]) => {
 
 const mergeUniquePaths = mergeWith(pipe(concat, uniq as any));
 
-export const generateUnitTest = (messages: SerializedMessage[], traces: DependencyTrace[]) => {
+/**
+ * Generates textual unit test code, based on the content of a list of Messages:
+ *
+ * - Test 'setup' is based upon the initial state given.
+ * - Test 'assertion' is based upon the final state given.
+ * - Dependency trace information is used determine the relevant data to use for
+     setup and assertion.
+ */
+export const generateUnitTest = (messages: SerializedMessage[], initialState: GenericObject, finalState: GenericObject, traces: DependencyTrace[]) => {
   const aggregateTrace = traces.length ? traces.reduce(mergeUniquePaths, {
     model: [],
     relay: [],
@@ -120,7 +129,6 @@ export const generateUnitTest = (messages: SerializedMessage[], traces: Dependen
   const pairs = messages.map((message, index) => ([message, traces[index]])) as MessageTracePair[];
 
   const [firstMsg] = head(pairs) as MessageTracePair;
-  const [lastMsg] = last(pairs) as MessageTracePair;
 
   /**
    * When there is no dependency trace available for relay properties accessed,
@@ -130,21 +138,22 @@ export const generateUnitTest = (messages: SerializedMessage[], traces: Dependen
   const relayArg = keys(firstMsg.relay).length > 0 && (!aggregateTrace || aggregateTrace.relay.length) ?
     `, ${toJsVal({ relay: aggregateTrace ? deepPick(firstMsg.relay, aggregateTrace.relay) : firstMsg.relay })}` : '';
 
-  const initialState = aggregateTrace ? deepPick(firstMsg.prev, aggregateTrace.model) : firstMsg.prev;
-  const finalState = set(
-    lensPath(lastMsg.path),
-    lastMsg.next,
-    aggregateTrace ? deepPick(lastMsg.prev, aggregateTrace.model) : lastMsg.prev
-  );
+  const tracedStates = aggregateTrace ? {
+    initial: deepPick(initialState, aggregateTrace.model),
+    final: deepPick(finalState, aggregateTrace.model)
+  } : {
+      initial: initialState,
+      final: finalState
+    };
 
   return [
     `it('should respond to ${messageNames(pairs)} messages', () => {`,
     `  const container = isolate(${firstMsg.name}${relayArg});`,
-    `  container.push(${toJsVal(initialState)});`,
+    `  container.push(${toJsVal(tracedStates.initial)});`,
     ...containerDispatch(pairs),
     '',
     ...expectCommands(pairs),
-    `  expect(container.state()).to.deep.equal(${toJsVal(finalState)});`,
+    `  expect(container.state()).to.deep.equal(${toJsVal(tracedStates.final)});`,
     `});`
   ].join('\n');
 }

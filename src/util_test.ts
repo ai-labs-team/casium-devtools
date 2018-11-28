@@ -2,25 +2,73 @@ import { expect } from 'chai';
 
 import * as util from './util';
 
-describe('nextState()', () => {
-  it('merges `next` into `prev` at `path`', () => {
-    const result = util.nextState({
-      path: ['counter'],
-      prev: {
-        xs: ['a', 'b'],
-        counter: {
-          value: 0
-        }
-      },
-      next: {
-        value: 1
+describe('applyDelta()', () => {
+  it('applies a message delta to `prev`', () => {
+    const prev = {
+      unchanged: 'string',
+      deep: {
+        unchanged: 10,
+        deleted: true
       }
-    } as any);
+    };
+
+    const msg = {
+      delta: [
+        ['deep', 'deleted'],
+        [['deep', 'added'], 'hello'],
+        [['added'], { hello: 'world' }]
+      ]
+    };
+
+    const result = util.applyDelta(prev, msg as any);
 
     expect(result).to.deep.equal({
-      xs: ['a', 'b'],
-      counter: {
-        value: 1
+      unchanged: 'string',
+      added: {
+        hello: 'world'
+      },
+      deep: {
+        unchanged: 10,
+        added: 'hello'
+      }
+    })
+  });
+});
+
+describe('applyDeltas()', () => {
+  it('applies multiple message deltas to `prev`', () => {
+    const prev = {
+      unchanged: 'string',
+      deep: {
+        unchanged: 10,
+        deleted: true
+      }
+    };
+
+    const msgs = [{
+      delta: [
+        ['deep', 'deleted']
+      ]
+    }, {
+      delta: [
+        [['deep', 'added'], 'hello']
+      ]
+    }, {
+      delta: [
+        [['added'], { hello: 'world' }]
+      ]
+    }];
+
+    const result = util.applyDeltas(prev, msgs as any);
+
+    expect(result).to.deep.equal({
+      unchanged: 'string',
+      added: {
+        hello: 'world'
+      },
+      deep: {
+        unchanged: 10,
+        added: 'hello'
       }
     })
   });

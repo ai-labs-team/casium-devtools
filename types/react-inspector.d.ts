@@ -24,16 +24,29 @@ declare module 'react-inspector' {
     data: T;
   }
 
-  interface Props {
+  interface ObjectInspectorProps {
     data: {};
     expandLevel: number;
     nodeRenderer?: NodeRenderer
     mapper?: NodeMapper
   }
 
-  export var ObjectInspector: React.ComponentClass<Props>;
-  export var ObjectRootLabel: React.ComponentClass;
-  export var ObjectLabel: React.ComponentClass;
+  export var ObjectInspector: React.ComponentClass<ObjectInspectorProps>;
+
+  interface ObjectRootLabelProps {
+    data: {};
+    name: string;
+  }
+
+  export var ObjectRootLabel: React.ComponentClass<ObjectRootLabelProps>;
+
+  interface ObjectLabelProps {
+    data: {};
+    isNonenumerable: boolean;
+    name: string;
+  }
+
+  export var ObjectLabel: React.ComponentClass<ObjectLabelProps>;
 
   interface ObjectNameProps {
     name: string;

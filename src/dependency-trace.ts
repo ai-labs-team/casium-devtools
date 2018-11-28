@@ -1,3 +1,5 @@
+import { GenericObject } from 'casium/core';
+
 import { SerializedMessage } from './instrumenter';
 
 export interface DependencyTrace {
@@ -132,11 +134,11 @@ export const dependencyTrace = (context: string, name: string, model: {}, messag
  * given so that the evaluated code can be viewed and debugged in 'Sources' pane
  * of the *inspected* application.
  */
-export const runDependencyTrace = (msg: SerializedMessage) => {
+export const runDependencyTrace = (initial: GenericObject, msg: SerializedMessage) => {
   const evalString = `(${dependencyTrace.toString()})(` +
     `'${msg.context}', ` +
     `'${msg.message}', ` +
-    `${JSON.stringify(msg.prev)} ,` +
+    `${JSON.stringify(initial)} ,` +
     `${JSON.stringify(msg.data)} ,` +
     `${JSON.stringify(msg.relay)})` +
     `//# sourceURL=casium-devtools/run-dependency-trace.js`;

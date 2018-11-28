@@ -1,19 +1,21 @@
 import * as React from 'react';
-import { ObjectInspector } from 'react-inspector';
-import { unnest, identity, last, pluck } from 'ramda';
-import { diff } from '@warrenseymour/json-delta';
+
+import { GenericObject } from 'casium/core';
+import { unnest, identity, pluck } from 'ramda';
 import { DeltaInspector } from '@fountainhead/react-json-delta-inspector';
 
 import { SerializedMessage, SerializedCommand } from './instrumenter';
 import { DependencyTrace, runDependencyTrace } from './dependency-trace';
-import { nextState, deepPick } from './util';
-import { nodeMapper } from './object-inspector';
+import { applyDeltas, deepPick } from './util';
 import { generateUnitTest } from './test-generator';
 import { MessageHeading } from './MessageHeading';
+import { ObjectInspector } from './object-inspector';
 
 import './MessageView.scss';
+import { Diff } from '@warrenseymour/json-delta';
 
 interface Props {
+  initialState: GenericObject;
   selected: SerializedMessage[];
   showUnitTest?: boolean;
   showPrevState?: boolean;
@@ -23,6 +25,7 @@ interface Props {
 }
 
 interface State {
+  finalState: GenericObject;
   unitTest?: string;
   dependencyTraces: DependencyTrace[];
   relativeTime: boolean;
@@ -32,7 +35,8 @@ export class MessageView extends React.Component<Props, State> {
   state: State = {
     unitTest: undefined,
     dependencyTraces: [],
-    relativeTime: true
+    relativeTime: true,
+    finalState: {}
   }
 
   render() {
@@ -49,17 +53,23 @@ export class MessageView extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this._updateDependencyTraces(this.props.useDependencyTrace, this.props.selected);
+    this._updateDependencyTraces(this.props.useDependencyTrace, this.props.initialState, this.props.selected);
+    this._updateNext(this.props.initialState, this.props.selected);
   }
 
   componentWillReceiveProps(nextProps: Props) {
+    const shouldUpdateNext = nextProps.selected !== this.props.selected;
+    if (shouldUpdateNext) {
+      this._updateNext(nextProps.initialState, nextProps.selected);
+    }
+
     const shouldUpdateDependencyTraces = (
       (nextProps.useDependencyTrace !== this.props.useDependencyTrace) ||
       (nextProps.selected !== this.props.selected)
     );
 
     const traces = shouldUpdateDependencyTraces ?
-      this._updateDependencyTraces(nextProps.useDependencyTrace, nextProps.selected) :
+      this._updateDependencyTraces(nextProps.useDependencyTrace, nextProps.initialState, nextProps.selected) :
       Promise.resolve(this.state.dependencyTraces);
 
     const shouldUpdateUnitTest = (
@@ -68,7 +78,7 @@ export class MessageView extends React.Component<Props, State> {
     );
 
     if (shouldUpdateUnitTest) {
-      traces.then(traces => this._updateUnitTest(nextProps.selected, traces));
+      traces.then(traces => this._updateUnitTest(nextProps.initialState, nextProps.selected, traces));
     }
   }
 
@@ -94,7 +104,7 @@ export class MessageView extends React.Component<Props, State> {
 
       const relayItem = Object.keys(relay).length > 0 ? [
         <div className="panel-label" key="relay">Relay</div>,
-        <ObjectInspector data={relay} expandLevel={0} mapper={nodeMapper} key="relay-inspector" />
+        <ObjectInspector data={relay} expandLevel={0} key="relay-inspector" />
       ] : null;
 
       return (
@@ -102,7 +112,7 @@ export class MessageView extends React.Component<Props, State> {
           <MessageHeading msg={msg} relativeTime={relativeTime} onToggle={this._toggleRelativeTime} />
           <div className="message-properties">
             <div className="panel-label">Data</div>
-            <ObjectInspector data={data} expandLevel={0} mapper={nodeMapper} />
+            <ObjectInspector data={data} expandLevel={0} />
             {relayItem}
           </div>
         </div>
@@ -128,7 +138,7 @@ export class MessageView extends React.Component<Props, State> {
     const items = commands.map((command, index) => (
       <div className="command" key={index}>
         <div className="panel-label">{command[0]}</div>
-        <ObjectInspector data={command[1]} expandLevel={1} mapper={nodeMapper} />
+        <ObjectInspector data={command[1]} expandLevel={1} />
       </div>
     ));
 
@@ -145,12 +155,12 @@ export class MessageView extends React.Component<Props, State> {
       return;
     }
 
-    const { prev } = this.props.selected[0];
+    const { initialState } = this.props;
 
     return (
       <div className="previous-state">
         <div className="panel-heading panel-label">Previous Model</div>
-        <ObjectInspector data={prev} expandLevel={2} mapper={nodeMapper} />
+        <ObjectInspector data={initialState} expandLevel={2} />
       </div>
     );
   }
@@ -160,14 +170,11 @@ export class MessageView extends React.Component<Props, State> {
       return;
     }
 
-    const { selected } = this.props;
-    const { prev } = selected[0];
-    const next = nextState(last(selected) as SerializedMessage);
+    const { selected, initialState } = this.props;
+    const delta = selected.reduce((combinedDelta: Diff, { delta }) => delta ? combinedDelta.concat(delta) : combinedDelta, []);
 
-    const delta = diff(prev, next);
-
-    const item = delta ?
-      <DeltaInspector {...{ prev, delta }} /> :
+    const item = delta.length ?
+      <DeltaInspector prev={initialState} delta={delta} /> :
       <em style={{ color: 'lightgray' }}>No Changes</em>;
 
     return (
@@ -183,19 +190,22 @@ export class MessageView extends React.Component<Props, State> {
       return;
     }
 
-    const next = nextState(last(this.props.selected) as SerializedMessage);
+    const { finalState } = this.state;
 
     return (
       <div className="next-state">
         <div className="panel-heading panel-label">New Model</div>
-        <ObjectInspector data={next} expandLevel={2} mapper={nodeMapper} />
+        <ObjectInspector data={finalState} expandLevel={2} />
       </div>
     );
   }
 
-  protected _updateDependencyTraces(enabled: boolean | undefined, selected: SerializedMessage[]) {
+  protected _updateDependencyTraces(enabled: boolean | undefined, initial: GenericObject, selected: SerializedMessage[]) {
     const traces = enabled ?
-      Promise.all(selected.map(runDependencyTrace)) :
+      // @todo: This is naive - should compute `initial` for each message using
+      // the previous delta rather than re-using the same initial for each
+      // iteration.
+      Promise.all(selected.map(msg => runDependencyTrace(initial, msg))) :
       Promise.resolve([]);
 
     return traces
@@ -209,9 +219,15 @@ export class MessageView extends React.Component<Props, State> {
       });
   }
 
-  protected _updateUnitTest(messages: SerializedMessage[], traces: DependencyTrace[]) {
+  protected _updateUnitTest(initialState: GenericObject, messages: SerializedMessage[], traces: DependencyTrace[]) {
+    this.setState(({ finalState }) => ({
+      unitTest: generateUnitTest(messages, initialState, finalState, traces)
+    }));
+  }
+
+  protected _updateNext(initial: GenericObject, messages: SerializedMessage[]) {
     this.setState({
-      unitTest: generateUnitTest(messages, traces)
+      finalState: applyDeltas(initial, messages)
     });
   }
 

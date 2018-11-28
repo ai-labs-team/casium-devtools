@@ -15,7 +15,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@fountainhead/react-json-delta-inspector": "1.1.0",
+    "@fountainhead/react-json-delta-inspector": "1.2.0",
     "@warrenseymour/json-delta": "^1.0.2",
     "axios": "^0.18.0",
     "copy-to-clipboard": "^3.0.8",
