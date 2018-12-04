@@ -15,8 +15,7 @@ const messages = [{
   message: 'Increment',
   path: [],
   data: { step: 1, type: 'click' },
-  prev: { count: 0 },
-  next: { count: 1 },
+  delta: [[['count'], 1]],
   relay: {},
   commands: []
 }, {
@@ -25,8 +24,7 @@ const messages = [{
   message: 'Increment',
   path: [],
   data: { step: 1, type: 'click' },
-  prev: { count: 1 },
-  next: { count: 2 },
+  delta: [[['count'], 2]],
   relay: {},
   commands: []
 }, {
@@ -35,16 +33,17 @@ const messages = [{
   message: 'Save',
   path: [],
   data: { value: 2 },
-  prev: { count: 2 },
-  next: { count: 2 },
+  delta: null,
   relay: {},
   commands: [
     ['LocalStorage.Write', { value: 2 }]
   ]
 }] as any[];
 
+const initial = { count: 0 };
+
 it('displays data given to each selected message', () => {
-  const wrapper = shallow(<MessageView selected={messages} />);
+  const wrapper = shallow(<MessageView selected={messages} initialState={initial} />);
   expect(wrapper.find('.message')).to.have.length(3);
 
   const inspector = wrapper.find('.message ObjectInspector').at(1);
@@ -52,13 +51,13 @@ it('displays data given to each selected message', () => {
 });
 
 it('displays all commands dispatched by selected messages', () => {
-  const wrapper = shallow(<MessageView selected={messages} />);
+  const wrapper = shallow(<MessageView selected={messages} initialState={initial} />);
   expect(wrapper.find('.command')).to.have.length(1);
 });
 
 context('when `showPrevState` is `true`', () => {
   it('displays previous state of first message', () => {
-    const wrapper = shallow(<MessageView selected={messages} showPrevState={true} />);
+    const wrapper = shallow(<MessageView selected={messages} initialState={initial} showPrevState={true} />);
     const inspector = wrapper.find('.previous-state ObjectInspector');
 
     expect(inspector.prop('data')).to.deep.equal({ count: 0 });
@@ -67,7 +66,7 @@ context('when `showPrevState` is `true`', () => {
 
 context('when `showNextState` is `true`', () => {
   it('displays next state of last message', () => {
-    const wrapper = shallow(<MessageView selected={messages} showNextState={true} />);
+    const wrapper = shallow(<MessageView selected={messages} initialState={initial} showNextState={true} />);
     const inspector = wrapper.find('.next-state ObjectInspector');
 
     expect(inspector.prop('data')).to.deep.equal({ count: 2 });
@@ -76,19 +75,18 @@ context('when `showNextState` is `true`', () => {
 
 context('when `showDiffState` is `true`', () => {
   it('displays difference in state between first and last message', () => {
-    const wrapper = shallow(<MessageView selected={messages} showDiffState={true} />);
-    const inspector = wrapper.find('.diff-state ObjectInspector');
+    const wrapper = shallow(<MessageView selected={messages} initialState={initial} showDiffState={true} />);
+    const inspector = wrapper.find('.diff-state DeltaInspector');
 
-    expect(inspector.prop('data')).to.deep.equal({
-      count: {
-        __old: 0,
-        __new: 2
-      }
-    });
+    expect(inspector.prop('prev')).to.equal(initial);
+    expect(inspector.prop('delta')).to.deep.equal([
+      [['count'], 1],
+      [['count'], 2]
+    ]);
   });
 
   it('does not display an inspector when no changes have occurred', () => {
-    const wrapper = shallow(<MessageView selected={[messages[2]]} showDiffState={true} />);
+    const wrapper = shallow(<MessageView selected={[messages[2]]} initialState={initial} showDiffState={true} />);
     const em = wrapper.find('em');
 
     expect(em.text()).to.equal('No Changes');
@@ -108,7 +106,7 @@ context('when `useDependencyTrace` is `true`', () => {
   });
 
   it('only displays dependencies in message data', done => {
-    const wrapper = shallow(<MessageView selected={messages} useDependencyTrace={true} />);
+    const wrapper = shallow(<MessageView selected={messages} initialState={initial} useDependencyTrace={true} />);
 
     setImmediate(() => {
       wrapper.update();
@@ -121,7 +119,7 @@ context('when `useDependencyTrace` is `true`', () => {
 
   context('when `useDependencyTrace` changes from `true` to `false`', () => {
     it('un-sets stored trace on `state`', done => {
-      const wrapper = shallow(<MessageView selected={messages} useDependencyTrace={true} />);
+      const wrapper = shallow(<MessageView selected={messages} initialState={initial} useDependencyTrace={true} />);
 
       setImmediate(() => {
         wrapper.setProps({ useDependencyTrace: false });
@@ -136,7 +134,7 @@ context('when `useDependencyTrace` is `true`', () => {
 
   context('when `useDependencyTrace` changes from `false` to `true`', () => {
     it('sets stored trace on `state`', done => {
-      const wrapper = shallow(<MessageView selected={messages} useDependencyTrace={false} />);
+      const wrapper = shallow(<MessageView selected={messages} initialState={initial} useDependencyTrace={false} />);
 
       wrapper.setProps({ useDependencyTrace: true });
 
@@ -159,7 +157,7 @@ context('when `useDependencyTrace` is `true`', () => {
 
   context('when `selected` changes', () => {
     it('updates the trace stored on `state`', done => {
-      const wrapper = shallow(<MessageView selected={messages} useDependencyTrace={true} />)
+      const wrapper = shallow(<MessageView selected={messages} initialState={initial} useDependencyTrace={true} />)
 
       setImmediate(() => {
         wrapper.setProps({ selected: messages.slice(0, 2) });
@@ -175,7 +173,7 @@ context('when `useDependencyTrace` is `true`', () => {
 
 context('when `showUnitTest` is `true`', () => {
   it('displays unit test content', () => {
-    const wrapper = shallow(<MessageView selected={messages} showUnitTest={true} />);
+    const wrapper = shallow(<MessageView selected={messages} initialState={initial} showUnitTest={true} />);
     const unitTest = wrapper.find('.unit-test-content');
 
     expect(unitTest.text()).to.equal('Generating Unit Test...');
@@ -183,7 +181,7 @@ context('when `showUnitTest` is `true`', () => {
 
   context('when `showUnitTest` changes from `false` to `true`', () => {
     it('updates the test content stored on `state`', done => {
-      const wrapper = shallow(<MessageView selected={messages} showUnitTest={false} />);
+      const wrapper = shallow(<MessageView selected={messages} initialState={initial} showUnitTest={false} />);
       wrapper.setProps({ showUnitTest: true });
 
       setImmediate(() => {
@@ -195,7 +193,7 @@ context('when `showUnitTest` is `true`', () => {
 
   context('when `selected` changes', () => {
     it('updates the test content stored on `state`', done => {
-      const wrapper = shallow(<MessageView selected={messages} showUnitTest={true} />);
+      const wrapper = shallow(<MessageView selected={messages} initialState={initial} showUnitTest={true} />);
       wrapper.setProps({ selected: messages.slice(0, 2) });
 
       setImmediate(() => {

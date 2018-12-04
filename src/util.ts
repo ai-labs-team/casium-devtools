@@ -1,6 +1,8 @@
+import { applyDiff } from '@warrenseymour/json-delta';
 import { and, both, contains, equals, flip, has, is, lensPath, map, merge, pipe, propSatisfies, reduce, set, tail, view } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
+import { GenericObject } from 'casium/core';
 
 export interface DownloadOptions {
   filename: string;
@@ -70,7 +72,21 @@ export const upload = (options: Partial<UploadOptions> = {}) =>
     input.dispatchEvent(evt);
   });
 
-export const nextState = ({ path, prev, next }: SerializedMessage) =>
+/**
+ * Applies a single message's delta to an initial state, yielding the state
+ * after that message occurred.
+ */
+export const applyDelta = (initialState: GenericObject, { delta }: SerializedMessage) =>
+  applyDiff(initialState, delta);
+
+/**
+ * Applies multiple messages' deltas to an initial state, yielding the final
+ * state after all messages occurred.
+ */
+export const applyDeltas = (initial: GenericObject, messages: SerializedMessage[]) =>
+  messages.reduce(applyDelta as any, initial);
+
+export const nextState = (path: string[], next: GenericObject, prev: GenericObject | null) =>
   set(lensPath(path), next, prev);
 
 export const isModifiedObject = both(

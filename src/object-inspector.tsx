@@ -1,123 +1,42 @@
 import * as React from 'react';
-import * as copy from 'copy-to-clipboard';
-import { both, flip, identity, keys, map, merge, pipe, propEq, replace, values, when, zipObj } from 'ramda';
-import { NodeRenderer, NodeMapper, ObjectRootLabel, ObjectLabel } from 'react-inspector';
 
-import { isModifiedObject, isModifiedArray, typeOf } from './util';
+import * as copy from 'copy-to-clipboard';
+import { is } from 'ramda';
+import { ObjectInspector as Inspector, ObjectInspectorProps, ObjectLabel, ObjectNode, ObjectRootLabel, ObjectRootLabelProps, ObjectLabelProps } from 'react-inspector';
 
 import './object-inspector.scss';
 
-interface ObjectDiffNode {
-  __new?: {};
-  __old?: {};
-}
+const isCopyable = is(Object);
 
-type ArrayDiffNode = any[][];
+const ObjectInspector: React.SFC<ObjectInspectorProps> = props =>
+  <Inspector
+    {...props}
+    nodeRenderer={NodeRenderer}
+  />
 
-const PLACEHOLDER = '\u00A0';
-
-export const nodeRenderer: NodeRenderer<ObjectDiffNode> = obj => {
-  const isRoot = obj.depth === 0;
-  const Label = isRoot ? ObjectRootLabel : ObjectLabel;
-  const append = merge(isRoot ? {} : { isNonenumerable: obj.isNonenumerable });
-  const keyMap = replace(/__(added|deleted)$/, '');
-  const name = obj.name && keyMap(obj.name || '') || obj.name;
-  const newKeys = when(
-    both(identity, propEq('constructor', Object)),
-    pipe(keys, map(keyMap), flip(zipObj)(values(obj.data)))
-  );
-
-  if (isModifiedObject(obj.data)) {
-    return <Label {...append({ name, data: obj.data })} />
-  }
-
-  if (isModifiedArray(obj.data)) {
-    const props = append({
-      name,
-      data: (obj.data as ArrayDiffNode).filter(propEq('length', 2))
-    });
-
-    return <Label {...props} />;
-  }
-
-  const props = append({
-    name,
-    data: newKeys(obj.data),
-    /* @TODO: Implement */ showPreview: false
-  });
-
-  return <Label {...props} />;
-}
-
-export const modifiedObjectNodeMapper: NodeMapper<ObjectDiffNode> = ({ name, childNodes: [oldNode, newNode] }) => (
-  <div>
-    <div className="model-diff deleted deleted-key">
-      {React.cloneElement(oldNode, { name })}
-    </div>
-    <div className="model-diff added added-key">
-      {React.cloneElement(newNode, { name })}
-    </div>
-  </div>
+const NodeRenderer: React.SFC<ObjectNode<any>> = ({ data, depth, name }) => (
+  depth === 0 ?
+    <CopyableObjectRootLabel name={name} data={data} /> :
+    <CopyableObjectLabel name={name} data={data} isNonenumerable={false} />
 );
 
-export const modifiedArrayChildren = (childNodes: React.ReactElement<{ name: string, className: string, data: any }>[] = []) => {
-  let index = 0;
+const CopyableObjectRootLabel: React.SFC<ObjectRootLabelProps> = props => (
+  <span>
+    <ObjectRootLabel {...props} />
+    <CopyButton data={props.data} />
+  </span>
+);
 
-  return childNodes.map((childNode) => {
-    const [op, data] = childNode.props.data;
-    let className = 'model-diff';
+const CopyableObjectLabel: React.SFC<ObjectLabelProps> = props => {
+  const label = <ObjectLabel {...props} />;
 
-    if (op === ' ') {
-      index += 1;
-      return;
-    }
-
-    if (op === '-') {
-      className += ' deleted deleted-element';
-    } else if (op === '+') {
-      className += ' added added-element';
-    }
-
-    const child = React.cloneElement(childNode, {
-      name: index + '',
-      data
-    });
-
-    if (op === '+') {
-      index += 1;
-    }
-
-    return (
-      <div className={className}>
-        {child}
-      </div>
-    );
-  })
-}
-
-export const diffNodeMapper: NodeMapper<ObjectDiffNode> = node => {
-  let { data, name, shouldShowPlaceholder } = node;
-
-  if (isModifiedObject(data)) {
-    return modifiedObjectNodeMapper(node);
-  }
-
-  if (isModifiedArray(data)) {
-    return nodeMapper(merge(node, {
-      childNodes: modifiedArrayChildren(node.childNodes)
-    }));
-  }
-
-  let className = '';
-
-  if (name && (/__(added|deleted)$/).test(name)) {
-    const match = name.match(/__(added|deleted)$/) as string[];
-    className = `model-diff ${match[1]} ${match[1]}-key`;
-    shouldShowPlaceholder = true;
-  }
-
-  return nodeMapper(merge(node, { shouldShowPlaceholder }), { className });
-}
+  return isCopyable(props.data) ?
+    <span>
+      {label}
+      <CopyButton data={props.data} />
+    </span> :
+    label
+};
 
 const CopyButton: React.StatelessComponent<{ data: any }> = ({ data }) => (
   <button className="copy-node-value" onClick={e => {
@@ -128,29 +47,4 @@ const CopyButton: React.StatelessComponent<{ data: any }> = ({ data }) => (
   </button>
 );
 
-export const nodeMapper: NodeMapper<any> = ({ shouldShowArrow, children, expanded, styles, shouldShowPlaceholder, Arrow, onClick, renderedNode, childNodes, data }, options = { className: '' }) => {
-  const placeholder = (shouldShowArrow || React.Children.count(children) > 0) ?
-    <Arrow expanded={expanded} styles={styles.treeNodeArrow} /> :
-    shouldShowPlaceholder ?
-      <span style={styles.treeNodePlaceholder}>{PLACEHOLDER}</span> :
-      null;
-
-  const type = typeOf(data);
-
-  return (
-    <div className="mapped-node">
-      <div
-        style={styles.treeNodePreviewContainer}
-        onClick={onClick}
-        className={`mapped-node-preview-container ${options.className}`}
-      >
-        {placeholder}
-        {renderedNode}
-        {type === 'object' || type === 'array' ? <CopyButton data={data} /> : null}
-      </div>
-      <ol role="group" style={styles.treeNodeChildNodesContainer}>
-        {childNodes}
-      </ol>
-    </div>
-  );
-}
+export { ObjectInspector, NodeRenderer, CopyableObjectRootLabel, CopyableObjectLabel };

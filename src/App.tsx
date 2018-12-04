@@ -1,9 +1,11 @@
 import * as React from 'react';
+
+import { GenericObject } from 'casium/core';
 import * as FontAwesome from 'react-fontawesome';
-import { concat, contains, equals, head, last, isNil, merge, prop, slice, where } from 'ramda';
+import { concat, contains, equals, head, last, isNil, merge, prop, slice, takeWhile, where } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
-import { download } from './util';
+import { download, applyDeltas } from './util';
 import { importLog } from './import-log';
 import { MessageView } from './MessageView';
 
@@ -13,6 +15,19 @@ import './App.scss';
 interface State {
   messages: SerializedMessage[];
   selected: SerializedMessage[];
+
+  /**
+   * Maintain the initial state; this is initially an empty object, but should
+   * be set to the 'next' state of the last message before the message history
+   * is cleared.
+   */
+  initial: GenericObject;
+
+  /**
+   * Maintain the state determined immediately before the selected message by
+   * applied each preceeding message's delta
+   */
+  replayedDeltas: GenericObject;
 
   haltForReplay: boolean;
 
@@ -61,10 +76,24 @@ const extendSelection = (messages: SerializedMessage[], selected: SerializedMess
   return slice(firstIdx, msgIdx + 1, messages);
 }
 
+/**
+ * Returns messages from `messages` up to (but not including) the first selected
+ * message from `selected`
+ */
+const messagesBeforeSelection = (messages: SerializedMessage[], selected: SerializedMessage[]) => {
+  if (selected.length === 0) {
+    return [];
+  }
+
+  return takeWhile(msg => msg.id !== selected[0].id, messages);
+}
+
 export class App extends React.Component<{}, State> {
   state: State = {
     messages: [],
     selected: [],
+    replayedDeltas: {},
+    initial: {},
 
     haltForReplay: false,
 
@@ -86,7 +115,11 @@ export class App extends React.Component<{}, State> {
   componentWillMount() {
     window.LISTENERS.push([
       where({ from: equals('CasiumDevToolsInstrumenter'), state: isNil }),
-      message => !this.state.haltForReplay && this.setState({ messages: this.state.messages.concat(message) })
+      message => {
+        if (!this.state.haltForReplay) {
+          this.setState({ messages: this.state.messages.concat(message) });
+        }
+      }
     ]);
 
     window.LISTENERS.push([
@@ -125,16 +158,20 @@ export class App extends React.Component<{}, State> {
   }
 
   clearMessages() {
+    const { active, initial, messages } = this.state;
+
     this.setState({
       messages: [],
       selected: [],
+      replayedDeltas: {},
+      initial: applyDeltas(initial, messages),
       haltForReplay: false,
-      active: merge(this.state.active, { timeTravel: false, replay: false })
+      active: merge(active, { timeTravel: false, replay: false })
     });
   }
 
   render() {
-    const { messages, selected, active } = this.state;
+    const { messages, selected, active, replayedDeltas } = this.state;
 
     return (
       <div className="container">
@@ -273,9 +310,19 @@ export class App extends React.Component<{}, State> {
                   className={'panel-item' + (contains(msg, selected) ? ' selected' : '')}
                   onClick={e => {
                     const nextSelection = e.shiftKey ? extendSelection(messages, selected, msg) : [msg]
-                    this.setState({ selected: nextSelection });
+                    const { initial } = this.state;
 
-                    active.timeTravel && window.messageClient({ selected: msg });
+                    const replayedDeltas = applyDeltas(initial, messagesBeforeSelection(messages, nextSelection));
+
+                    this.setState({
+                      replayedDeltas,
+                      selected: nextSelection
+                    });
+
+                    if (active.timeTravel) {
+                      const setState = applyDeltas(replayedDeltas, nextSelection);
+                      window.messageClient({ setState });
+                    }
                   }}
                 >
                   {msg.message !== null ? msg.message : `Init (${msg.name})`}
@@ -287,6 +334,7 @@ export class App extends React.Component<{}, State> {
           <div key="panel-head" className="panel content scrollable with-heading">
             <MessageView
               selected={selected}
+              initialState={replayedDeltas}
               useDependencyTrace={active.dependencyTrace}
               showUnitTest={active.unitTest}
               showPrevState={active.prevState}

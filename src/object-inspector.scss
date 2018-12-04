@@ -1,54 +1,30 @@
-.model-diff {
-    &.added-key.mapped-node-preview-container,
-    &.added-element > li > .mapped-node > .mapped-node-preview-container,
-    &.added-key > li > .mapped-node > .mapped-node-preview-container {
-        & > span:nth-of-type(2) {
-            .object-name {
-                font-weight: bold;
-                color: green !important;
-            }
+li[role="treeitem"] {
+    button.copy-node-value {
+        display: none;
+
+        font-size: 11px;
+        font-family: Menlo, monospace;
+        line-height: 12px;
+
+        padding: 0px 3px;
+        border-radius: 3px;
+        border: 1px solid #c3c3c3;
+        margin-left: 10px;
+        height: 14px;
+
+        background-color: #f2f2f2;
+
+        cursor: pointer;
+
+        &:hover {
+            background-color: #e0e0e0;
         }
     }
 
-    &.deleted-key.mapped-node-preview-container,
-    &.deleted-element > li > .mapped-node > .mapped-node-preview-container,
-    &.deleted-key > li > .mapped-node > .mapped-node-preview-container {
-        & > span:nth-of-type(2) {
-            text-decoration: line-through;
-
-            .object-name {
-                font-weight: bold;
-                color: red !important;
-            }
-        }
-    }
-}
-
-.mapped-node {
-    &-preview-container {
-        &:hover .copy-node-value {
-            display: inline-block;
-        }
-
-        .copy-node-value {
-            display: none;
-
-            font-size: 11px;
-            font-family: Menlo, monospace;
-            line-height: 12px;
-
-            padding: 0px 3px;
-            border-radius: 3px;
-            border: 1px solid #c3c3c3;
-            margin-left: 10px;
-            height: 14px;
-
-            background-color: #f2f2f2;
-
-            cursor: pointer;
-
-            &:hover {
-                background-color: #e0e0e0;
+    > div {
+        &:hover {
+            button.copy-node-value {
+                display: inline-block;
             }
         }
     }

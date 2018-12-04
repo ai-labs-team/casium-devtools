@@ -86,16 +86,20 @@ context('when a new message is received', () => {
 
 const messages = [{
   id: '0',
-  message: '0'
+  message: '0',
+  delta: [[['counter'], 0], [['flag'], false]]
 }, {
   id: '1',
-  message: '1'
+  message: '1',
+  delta: [[['counter'], 1]]
 }, {
   id: '2',
-  message: '2'
+  message: '2',
+  delta: [[['flag'], true]]
 }, {
   id: '3',
-  message: '3'
+  message: '3',
+  delta: null
 }];
 
 context('when a message is clicked', () => {
@@ -104,10 +108,7 @@ context('when a message is clicked', () => {
     wrapper.setState({ messages });
     wrapper.find('.panel-item').at(1).simulate('click', {});
 
-    expect(getState(wrapper).selected).to.deep.equal([{
-      id: '1',
-      message: '1'
-    }]);
+    expect(getState(wrapper).selected).to.deep.equal([messages[1]]);
   });
 
   context('when time-travel is enabled', () => {
@@ -123,9 +124,9 @@ context('when a message is clicked', () => {
       wrapper.find('.panel-item').at(1).simulate('click', {});
 
       expect(global.window.messageClient.calledWith({
-        selected: {
-          id: '1',
-          message: '1'
+        setState: {
+          counter: 1,
+          flag: false
         }
       })).to.equal(true);
     });
@@ -138,58 +139,35 @@ context('when a message is shift-clicked', () => {
     wrapper.setState({ messages });
 
     wrapper.find('.panel-item').at(1).simulate('click', { shiftKey: true });
-    expect(getState(wrapper).selected).to.deep.equal([{
-      id: '1',
-      message: '1'
-    }]);
+    expect(getState(wrapper).selected).to.deep.equal([messages[1]]);
 
     wrapper.find('.panel-item').at(2).simulate('click', { shiftKey: true });
-    expect(getState(wrapper).selected).to.deep.equal([{
-      id: '1',
-      message: '1'
-    }, {
-      id: '2',
-      message: '2'
-    }]);
+    expect(getState(wrapper).selected).to.deep.equal([
+      messages[1],
+      messages[2]
+    ]);
 
     wrapper.find('.panel-item').at(0).simulate('click', { shiftKey: true });
-    expect(getState(wrapper).selected).to.deep.equal([{
-      id: '0',
-      message: '0'
-    }, {
-      id: '1',
-      message: '1'
-    }, {
-      id: '2',
-      message: '2'
-    }]);
+    expect(getState(wrapper).selected).to.deep.equal([
+      messages[0],
+      messages[1],
+      messages[2]
+    ]);
 
     wrapper.find('.panel-item').at(3).simulate('click', { shiftKey: true });
-    expect(getState(wrapper).selected).to.deep.equal([{
-      id: '0',
-      message: '0'
-    }, {
-      id: '1',
-      message: '1'
-    }, {
-      id: '2',
-      message: '2'
-    }, {
-      id: '3',
-      message: '3'
-    }]);
+    expect(getState(wrapper).selected).to.deep.equal([
+      messages[0],
+      messages[1],
+      messages[2],
+      messages[3]
+    ]);
 
     wrapper.find('.panel-item').at(2).simulate('click', { shiftKey: true });
-    expect(getState(wrapper).selected).to.deep.equal([{
-      id: '0',
-      message: '0'
-    }, {
-      id: '1',
-      message: '1'
-    }, {
-      id: '2',
-      message: '2'
-    }]);
+    expect(getState(wrapper).selected).to.deep.equal([
+      messages[0],
+      messages[1],
+      messages[2]
+    ]);
   });
 });
 
@@ -200,6 +178,14 @@ describe('clear button', () => {
 
     wrapper.find('.clear-messages-button').simulate('click', {});
     expect(getState(wrapper).messages).to.deep.equal([]);
+  });
+
+  it('sets `initial` state to final state as of last message before clearing', () => {
+    const wrapper = shallow(<App />);
+    wrapper.setState({ messages });
+
+    wrapper.find('.clear-messages-button').simulate('click', {});
+    expect(getState(wrapper).initial).to.deep.equal({ counter: 1, flag: true });
   });
 
   it('toggles `active.clearOnReload` when meta- or ctrl-clicked', () => {
@@ -245,24 +231,7 @@ describe('download button', () => {
     wrapper.find('.save-msg-button').simulate('click');
 
     expect((util.download as sinon.SinonSpy).calledWith({
-      data: `[
-  {
-    "id": "0",
-    "message": "0"
-  },
-  {
-    "id": "1",
-    "message": "1"
-  },
-  {
-    "id": "2",
-    "message": "2"
-  },
-  {
-    "id": "3",
-    "message": "3"
-  }
-]`,
+      data: JSON.stringify(messages, null, 2),
       filename: 'message-log.json'
     })).to.equal(true);
   });

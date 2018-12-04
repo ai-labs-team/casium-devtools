@@ -4,7 +4,9 @@ import { GenericObject } from 'casium/core';
 import AppMessage from 'casium/message';
 import StateManager from 'casium/runtime/state_manager';
 import ExecContext, { cmdName } from 'casium/runtime/exec_context';
-import { filter, flatten, is, lensPath, map, pipe, set } from 'ramda';
+import { diff, Diff } from '@warrenseymour/json-delta';
+import { filter, flatten, is, map, pipe } from 'ramda';
+import { nextState } from './util';
 
 export const INSTRUMENTER_KEY = '__CASIUM_DEV_TOOLS_INSTRUMENTER__';
 
@@ -41,18 +43,16 @@ export type SerializedMessage = {
   name: string;
   context: string;
   ts: number;
-  prev: any;
-  next: any;
+  delta: Diff;
   from: string;
   relay: any;
   message: string;
   data: {} | null;
-  path: string[];
   commands?: SerializedCommand[];
 }
 
 export type InboundMessage = {
-  selected: SerializedMessage
+  setState: GenericObject
 }
 
 const serialize = map<GenericObject, GenericObject>(pipe(safeStringify, safeParse)) as any;
@@ -75,6 +75,13 @@ export class Instrumenter {
   protected _session = Date.now() + Math.random().toString(36).substr(2);
 
   protected _messageCounter = 0;
+
+  /**
+   * Retain a copy of the previous state so that only deltas are sent to
+   * backends to reduce wire size and memory footprint for large and
+   * long-running applications
+   */
+  protected _prev: GenericObject | null = {};
 
   /**
   * This class acts as a Singleton; upon construction, it searches for an
@@ -111,10 +118,10 @@ export class Instrumenter {
       data: msg && msg.data,
       commands: serializeCmds(cmds),
       name,
-      prev,
-      next,
-      path,
+      delta: diff(prev, nextState(serialize(path), next, prev)),
     });
+
+    this._prev = prev;
 
     this.contexts[context.id] = context;
 
@@ -155,10 +162,8 @@ export class Instrumenter {
       disconnect: () => state.connected = false,
 
       send: (msg: InboundMessage) => {
-        if (msg.selected) {
-          const sel = msg.selected;
-          const newState = set(lensPath(sel.path), sel.next, sel.prev);
-          return withStateManager(stateManager => stateManager.set(newState));
+        if (msg.setState) {
+          return withStateManager(stateManager => stateManager.set(msg.setState));
         }
       }
     });
