@@ -8,7 +8,6 @@
     "build": "yarn clean && NODE_ENV=production webpack",
     "test": "nyc mocha",
     "clean": "rm -rf dist",
-    "deps": "yarn && cd node_modules/react-inspector && yarn && yarn build",
     "unit-test": "nyc mocha -r test/setup.js --opts test/mocha.opts",
     "watch-tests": "nodemon -e ts,tsx -x yarn unit-test"
   },
