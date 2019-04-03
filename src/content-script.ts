@@ -4,9 +4,14 @@ import { fromMatches } from './util';
  * Inject a Script into the inspected window containing an Instrumenter
  * configured to use the `postMessage` client.
  */
+const doc = (document.head || document.documentElement);
 const clientScript = document.createElement('script');
 clientScript.src = browser.extension.getURL('injected-script.js');
-(document.head || document.documentElement).appendChild(clientScript);
+doc && doc.appendChild(clientScript);
+
+if (!doc) {
+  console.warn('[Casium Dev Tools] Could not instrument application: document object not found');
+}
 
 const isAllowedPortSender = fromMatches([
   'CasiumDevToolsPanel',
