@@ -2,12 +2,13 @@ import * as React from 'react';
 
 import { GenericObject } from 'casium/core';
 import * as FontAwesome from 'react-fontawesome';
-import { concat, contains, equals, head, last, isNil, merge, prop, slice, takeWhile, where } from 'ramda';
+import { concat, contains, equals, head, last, isNil, merge, pipe, prop, slice, takeWhile, where, nth } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { download, applyDeltas } from './util';
-import { importLog } from './import-log';
+import { importLog, readFile, upload } from './import-log';
 import { MessageView } from './MessageView';
+import * as DragDrop from './dragdrop';
 
 import 'font-awesome/scss/font-awesome.scss';
 import './App.scss';
@@ -174,7 +175,12 @@ export class App extends React.Component<{}, State> {
     const { messages, selected, active, replayedDeltas } = this.state;
 
     return (
-      <div className="container">
+      <div
+        className="container"
+        onDrop={pipe(DragDrop.files, nth(0) as (fl: File[]) => File, this._importDropped)}
+        onDragOver={DragDrop.allow}
+      >
+
         <div className="panel-tools">
           <span style={{ display: 'inline-block', minWidth: '225px' }}>
             <FontAwesome
@@ -343,19 +349,21 @@ export class App extends React.Component<{}, State> {
             />
           </div>
         </div>
-      </div >
+      </div>
     );
   }
+
+  protected _importDropped = (file: File) => importLog(readFile(file)).then(this._setMsgs);
 
   /**
    * Use `importLog` to replay a message log from a file on disk, then set
    * `state.messages` to display the Messages contained in the log, and reset
    * selection state.
    */
-  protected _import = () =>
-    importLog()
-      .then(messages => this.setState({
-        messages,
-        selected: []
-      }))
+  protected _import = () => importLog(upload({ type: 'application/json' })).then(this._setMsgs)
+
+  protected _setMsgs = (messages: SerializedMessage[]) => this.setState({
+    messages,
+    selected: []
+  });
 }
