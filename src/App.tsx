@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { GenericObject } from 'casium/core';
 import * as FontAwesome from 'react-fontawesome';
-import { concat, contains, equals, head, last, isNil, merge, pipe, prop, slice, takeWhile, where, nth } from 'ramda';
+import { concat, contains, equals, head, last, isNil, merge, omit, pipe, prop, slice, takeWhile, where, nth } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { download, applyDeltas } from './util';
@@ -118,7 +118,7 @@ export class App extends React.Component<{}, State> {
       where({ from: equals('CasiumDevToolsInstrumenter'), state: isNil }),
       message => {
         if (!this.state.haltForReplay) {
-          this.setState({ messages: this.state.messages.concat(message) });
+          this.setState({ messages: this.state.messages.concat(omit(['relay'], message)) });
         }
       }
     ]);
