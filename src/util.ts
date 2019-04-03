@@ -1,5 +1,5 @@
 import { applyDiff } from '@warrenseymour/json-delta';
-import { and, both, contains, equals, flip, has, is, lensPath, map, merge, pipe, propSatisfies, reduce, set, tail, view } from 'ramda';
+import { and, both, contains, equals, flip, has, is, lensPath, map, merge, nth, pipe, propSatisfies, reduce, set, tail, view } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { GenericObject } from 'casium/core';
@@ -39,38 +39,41 @@ export interface UploadResult {
   content: string;
 }
 
-export const upload = (options: Partial<UploadOptions> = {}) =>
-  new Promise<UploadResult>((resolve, reject) => {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
+export const readFile = (file: File): Promise<UploadResult> => new Promise((resolve, reject) => {
+  const reader = new FileReader();
 
-    if (options.type) {
-      input.setAttribute('accept', options.type)
-    }
-
-    input.addEventListener('change', e => {
-      if (!input.files || !input.files[0]) {
-        return reject();
-      }
-
-      const file = input.files[0];
-
-      const reader = new FileReader();
-      reader.onload = (e: any) => resolve({
-        filename: file.name,
-        content: e.target.result
-      });
-
-      reader.onerror = (err: any) => reject(err);
-
-      reader.readAsText(file);
-    });
-
-    const evt = document.createEvent('MouseEvents');
-    evt.initEvent('click', true, true);
-
-    input.dispatchEvent(evt);
+  reader.onload = (e: any) => resolve({
+    filename: file.name,
+    content: e.target.result
   });
+  reader.onerror = reject;
+  reader.readAsText(file);
+});
+
+/**
+ * Prompts the user to select a file, and returns a `FileList` wrapped in a promise.
+ */
+const requestFile = (options: Partial<UploadOptions> = {}): Promise<FileList> => new Promise((resolve, reject) => {
+  const input = document.createElement('input');
+  input.setAttribute('type', 'file');
+
+  if (options.type) {
+    input.setAttribute('accept', options.type);
+  }
+  input.addEventListener('change', () => (!input.files || !input.files[0]) ? reject() : resolve(input.files));
+
+  const evt = document.createEvent('MouseEvents');
+  evt.initEvent('click', true, true);
+
+  input.dispatchEvent(evt);
+});
+
+/**
+ * Prompt the user to select a file, then read it.
+ */
+export const upload = (options: Partial<UploadOptions> = {}): Promise<UploadResult> => (
+  requestFile(options).then(nth(0) as any as (fl: FileList) => File).then(readFile)
+);
 
 /**
  * Applies a single message's delta to an initial state, yielding the state

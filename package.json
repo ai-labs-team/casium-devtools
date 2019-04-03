@@ -23,8 +23,8 @@
     "hjson": "^3.1.0",
     "js-cookie": "^2.2.0",
     "ramda": "^0.25.0",
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "react-fontawesome": "^1.6.1",
     "title-case": "^2.1.1",
     "webextension-polyfill": "^0.2.1"
