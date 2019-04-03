@@ -45,7 +45,7 @@ export type SerializedMessage = {
   ts: number;
   delta: Diff;
   from: string;
-  relay: any;
+  relay?: any;
   message: string;
   data: {} | null;
   commands?: SerializedCommand[];
