@@ -32,6 +32,8 @@ const broadcast = (msg: {}) => {
   }
 }
 
+const senderId = (sender: browser.runtime.Port) => sender.sender && sender.sender.tab && sender.sender.tab.id || null;
+
 // DevTools / page connection
 browser.runtime.onConnect.addListener(port => {
 
@@ -59,11 +61,7 @@ browser.runtime.onConnect.addListener(port => {
       return;
     }
     console.log("%c[Message Relayed]: " + destination, "font-weight: bold; color: #e6b800;", message, { ports, sender });
-    port.postMessage(message);
-
-    if (message.tabId && message.scriptToInject) {
-      browser.tabs.executeScript(message.tabId, { file: message.scriptToInject });
-    }
+    port.postMessage(Object.assign(message, { tab: senderId(sender) }));
   }
 
   port.postMessage({ info: "Client connected to background", name: port.name });
@@ -71,7 +69,7 @@ browser.runtime.onConnect.addListener(port => {
   port.onDisconnect.addListener(function() {
     broadcast({ state: 'disconnected' });
     console.log(`%c[Client Disconnected]: ${port.name}`, "font-weight: bold; color: #cc2900;");
-    (port.onMessage.removeListener as any)(portListener);
+    port.onMessage.removeListener(portListener as any);
     delete ports[port.name];
   });
 
