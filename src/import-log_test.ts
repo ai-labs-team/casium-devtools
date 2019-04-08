@@ -62,12 +62,10 @@ describe('importLog', () => {
   it('uses time travel to replay the last message in the log', done => {
     global.window.messageClient = sinon.spy();
 
-    (util.upload as sinon.SinonStub).resolves({
+    importLog.importLog(Promise.resolve({
       filename: 'messages.json',
       content: JSON.stringify(messages)
-    });
-
-    importLog.importLog();
+    }));
 
     setImmediate(() => {
       expect(global.window.messageClient.args).to.deep.equal([
@@ -90,12 +88,10 @@ describe('importLog', () => {
 
   describe('when importing a non-JSON file', () => {
     it('displays an error message', done => {
-      (util.upload as sinon.SinonStub).resolves({
+      importLog.importLog(Promise.resolve({
         filename: 'not-json.txt',
         content: 'i am not json'
-      });
-
-      importLog.importLog();
+      }));
 
       setImmediate(() => {
         expect((notifier.display as sinon.SinonStub).args).to.deep.equal([
@@ -114,12 +110,10 @@ describe('importLog', () => {
 
   describe('when importing an empty JSON file', () => {
     it('displays an error message', done => {
-      (util.upload as sinon.SinonStub).resolves({
+      importLog.importLog(Promise.resolve({
         filename: 'empty.json',
         content: JSON.stringify([])
-      });
-
-      importLog.importLog();
+      }));
 
       setImmediate(() => {
         expect((notifier.display as sinon.SinonStub).args).to.deep.equal([

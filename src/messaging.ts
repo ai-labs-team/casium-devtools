@@ -2,7 +2,7 @@ import { SerializedMessage } from './instrumenter';
 
 export type Listener = (msg: SerializedMessage) => any;
 
-window.LISTENERS = []
+window.LISTENERS = [];
 
 const processMsg = (msg: SerializedMessage) =>
   ([predicate, ...listeners]: Listener[]) => predicate(msg) && listeners.map(l => l(msg));
@@ -15,7 +15,7 @@ backgroundPageConnection.onMessage.addListener((message: any) => {
 
 window.messageClient = (data) => {
   backgroundPageConnection.postMessage(Object.assign({
-    from: "CasiumDevToolsPanel",
+    from: 'CasiumDevToolsPanel',
     tabId: browser.devtools.inspectedWindow.tabId,
   }, data));
 }

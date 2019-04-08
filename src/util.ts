@@ -1,8 +1,10 @@
 import { applyDiff } from '@warrenseymour/json-delta';
-import { and, both, contains, equals, flip, has, is, lensPath, map, merge, nth, pipe, propSatisfies, reduce, set, tail, view } from 'ramda';
+import { and, both, contains, equals, flip, has, is, lensPath, map, merge, nth, pipe, reduce, set, tail, view, where } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { GenericObject } from 'casium/core';
+
+const inList = flip(contains);
 
 export interface DownloadOptions {
   filename: string;
@@ -22,7 +24,7 @@ export const download = (options: Partial<DownloadOptions> = {}) => {
 
   const link = document.createElement('a'),
     evt = document.createEvent("MouseEvents"),
-    blob = new Blob([opts.data], { type: opts.type });
+    blob = new Blob([opts.data as any], { type: opts.type });
 
   link.href = window.URL.createObjectURL(blob);
   link.download = opts.filename;
@@ -47,7 +49,8 @@ export const readFile = (file: File): Promise<UploadResult> => new Promise((reso
     content: e.target.result
   });
   reader.onerror = reject;
-  reader.readAsText(file);
+  file && reader.readAsText(file);
+  !file && reject(new Error('File is empty'));
 });
 
 /**
@@ -135,7 +138,7 @@ export const deepPick = <T extends {}>(data: T, paths: string[][]): Partial<T> =
   paths
     .sort((a, b) => a.length - b.length)
     .reduce((result, path) => {
-      if (!hasPath(path, data)) {
+      if (!hasPath(path, data || {})) {
         return result;
       }
 
@@ -145,7 +148,4 @@ export const deepPick = <T extends {}>(data: T, paths: string[][]): Partial<T> =
       return set(lens, value, result);
     }, {});
 
-const _contains = flip(contains);
-
-export const fromMatches = (senders: string[]) =>
-  propSatisfies(_contains(senders), 'from');
+export const fromMatches = (senders: string[]) => where({ from: inList(senders) });

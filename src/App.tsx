@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import { GenericObject } from 'casium/core';
 import * as FontAwesome from 'react-fontawesome';
-import { concat, contains, equals, head, last, isNil, merge, omit, pipe, prop, slice, takeWhile, where, nth } from 'ramda';
+import { concat, contains, equals, head, last, isNil, merge, omit, pipe, prop, slice, takeWhile, where, nth, whereEq } from 'ramda';
 
 import { SerializedMessage } from './instrumenter';
 import { download, applyDeltas } from './util';
@@ -24,6 +24,8 @@ interface State {
    */
   initial: GenericObject;
 
+  initClock: number | null;
+
   /**
    * Maintain the state determined immediately before the selected message by
    * applied each preceeding message's delta
@@ -44,7 +46,7 @@ interface State {
     replay: boolean;
     showInit: boolean;
     showFilters: boolean;
-  },
+  };
 }
 
 /**
@@ -81,20 +83,20 @@ const extendSelection = (messages: SerializedMessage[], selected: SerializedMess
  * Returns messages from `messages` up to (but not including) the first selected
  * message from `selected`
  */
-const messagesBeforeSelection = (messages: SerializedMessage[], selected: SerializedMessage[]) => {
-  if (selected.length === 0) {
-    return [];
-  }
-
-  return takeWhile(msg => msg.id !== selected[0].id, messages);
-}
+const messagesBeforeSelection = (messages: SerializedMessage[], selected: SerializedMessage[]) => (
+  selected.length === 0
+    ? []
+    : takeWhile(({ id }) => id !== selected[0].id, messages)
+);
 
 export class App extends React.Component<{}, State> {
+
   state: State = {
     messages: [],
     selected: [],
     replayedDeltas: {},
     initial: {},
+    initClock: null,
 
     haltForReplay: false,
 
@@ -114,9 +116,14 @@ export class App extends React.Component<{}, State> {
   }
 
   componentWillMount() {
+    const sendInitialized = () => window.messageClient({ state: 'initialized' });
+
     window.LISTENERS.push([
       where({ from: equals('CasiumDevToolsInstrumenter'), state: isNil }),
       message => {
+        this.state.initClock && clearInterval(this.state.initClock);
+        this.setState({ initClock: null });
+
         if (!this.state.haltForReplay) {
           this.setState({ messages: this.state.messages.concat(omit(['relay'], message)) });
         }
@@ -129,22 +136,37 @@ export class App extends React.Component<{}, State> {
     ]);
 
     window.LISTENERS.push([
-      where({ from: equals('CasiumDevToolsInstrumenter'), state: equals('initialized') }),
-      () => this.state.active.replay && this.setState({ haltForReplay: true }),
-      () => this.state.active.clearOnReload && this.clearMessages(),
-      () => this.state.active.replay && window.messageClient({ selected: this.state.selected[0] }),
+      whereEq({ from: 'CasiumDevToolsInstrumenter', state: 'initialized' }),
+
+      (msg) => {
+        this.state.active.replay && this.setState({ haltForReplay: true });
+        this.state.active.clearOnReload && this.clearMessages();
+        this.state.active.replay && window.messageClient({ selected: this.state.selected[0] });
+
+        msg.initial && this.setState({ initial: {} });
+
+        this.state.initClock && clearInterval(this.state.initClock);
+        this.setState({ initClock: null });
+      },
+
       /**
        * Notify the Instrumenter Backend(s) that the Panel is already initialized
        * if the inspected page was reloaded
        */
-      () => window.messageClient({ state: 'initialized' })
+      sendInitialized
+    ]);
+
+    window.LISTENERS.push([
+      whereEq({ from: 'CasiumDevToolsInstrumenter', state: 'ping' }),
+      sendInitialized
     ]);
 
     /**
      * Notify the Instrumenter Backend(s) that the Panel was initialized if it
      * loaded *after* the inspected page
      */
-    window.messageClient({ state: 'initialized' });
+    this.setState({ initClock: setInterval(sendInitialized, 13000) as any as number });
+    sendInitialized();
   }
 
   setActive<K extends keyof State['active']>(key: K, state: boolean) {

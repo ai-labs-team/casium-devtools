@@ -42,10 +42,10 @@
  - [x] Toggle next state / prev state / diff view
  - [x] Message timestamps, toggle relative / absolute
  - [x] Clear on reload / preserve log button
- - [ ] Replay last / replay selected
- - [ ] Import / replay log
- - [ ] Compare runs
+ - [x] Replay last / replay selected
+ - [x] Import / replay log
  - [ ] Tab isolation
+ - [ ] Compare runs
  - [ ] Preserve state across reloads
  - [ ] Do a better job surfacing errors
  - [ ] Better formatting for object output in generated unit tests

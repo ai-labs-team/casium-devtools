@@ -46,8 +46,9 @@ export type SerializedMessage = {
   delta: Diff;
   from: string;
   relay?: any;
-  message: string;
+  message: string | null;
   data: {} | null;
+  initial?: {};
   commands?: SerializedCommand[];
 }
 
@@ -55,7 +56,7 @@ export type InboundMessage = {
   setState: GenericObject
 }
 
-const serialize = map<GenericObject, GenericObject>(pipe(safeStringify, safeParse)) as any;
+const serialize: <T>(val: T) => T = map(pipe(safeStringify, safeParse)) as any;
 
 const serializeCmds: (cmds: any[]) => SerializedCommand[] =
   pipe(flatten as any, filter(is(Object)), map((cmd: AppMessage) => [cmdName(cmd), cmd.data]) as any);
@@ -66,6 +67,7 @@ const serializeCmds: (cmds: any[]) => SerializedCommand[] =
  * to connect simultaneously.
  */
 export class Instrumenter {
+
   public stateManager?: StateManager;
 
   public contexts: { [id: string]: ExecContext<any> } = {};
@@ -118,16 +120,19 @@ export class Instrumenter {
       data: msg && msg.data,
       commands: serializeCmds(cmds),
       name,
-      delta: diff(prev, nextState(serialize(path), next, prev)),
+      delta: diff(prev, nextState(serialize(path as string[]), next, prev)) || [],
     });
 
     this._prev = prev;
-
     this.contexts[context.id] = context;
 
     for (const name in this._backendStates) {
       const { connected, queue, onMessage } = this._backendStates[name];
-      connected ? onMessage(serialized) : queue.push(serialized);
+
+      connected ? onMessage(serialized) : (queue.push(serialized) && onMessage({
+        from: 'CasiumDevToolsInstrumenter',
+        state: 'ping'
+      } as any));
     }
   };
 
@@ -178,7 +183,8 @@ export class Instrumenter {
 
     onMessage({
       from: 'CasiumDevToolsInstrumenter',
-      state: 'initialized'
+      state: 'initialized',
+      initial: this._prev
     } as any);
   }
 }

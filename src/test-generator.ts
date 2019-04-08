@@ -27,7 +27,7 @@ const toJsVal = (val: any, indent = 2) =>
  * Counts the consecutive entries in an array, eg `['foo', 'foo', 'bar', 'baz']`
  * becomes [['foo', 2], ['bar', 1], ['baz', 1]]`
  */
-const countConsecutive = (list: string[]) => {
+const countConsecutive = (list: (string | null)[]) => {
   const result: [string, number][] = [];
 
   for (let i = 0, j = 0; i < list.length; i += 1) {
@@ -35,7 +35,7 @@ const countConsecutive = (list: string[]) => {
     const next = list[i + 1];
 
     if (!result[j]) {
-      result[j] = [current, 0];
+      result[j] = [current || '', 0];
     }
 
     result[j][1] += 1;
@@ -87,7 +87,7 @@ const containerDispatch = (pairs: MessageTracePair[]) => {
     `  ${cmdAssign}container.dispatch(`,
     ...args,
     `  );`
-  ]
+  ];
 }
 
 const expectCommands = (pairs: MessageTracePair[]) => {
@@ -138,13 +138,17 @@ export const generateUnitTest = (messages: SerializedMessage[], initialState: Ge
   const relayArg = keys(firstMsg.relay).length > 0 && (!aggregateTrace || aggregateTrace.relay.length) ?
     `, ${toJsVal({ relay: aggregateTrace ? deepPick(firstMsg.relay, aggregateTrace.relay) : firstMsg.relay })}` : '';
 
-  const tracedStates = aggregateTrace ? {
-    initial: deepPick(initialState, aggregateTrace.model),
-    final: deepPick(finalState, aggregateTrace.model)
-  } : {
-      initial: initialState,
-      final: finalState
-    };
+  const tracedStates = (
+    aggregateTrace
+      ? {
+          initial: deepPick(initialState, aggregateTrace.model),
+          final: deepPick(finalState, aggregateTrace.model)
+        }
+      : {
+          initial: initialState,
+          final: finalState
+        }
+  );
 
   return [
     `it('should respond to ${messageNames(pairs)} messages', () => {`,

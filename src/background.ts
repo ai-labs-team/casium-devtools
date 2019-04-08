@@ -6,11 +6,11 @@
 // browser.extension.*
 
 const ports: { [name: string]: browser.runtime.Port } = {};
-const queues: { [dest: string]: browser.runtime.Port['postMessage'][] } = {};
+const queues: { [dest: string]: {}[] } = {};
 
 const channels: { [key: string]: string } = {
-  CasiumDevToolsPageScript: "CasiumDevToolsPanel",
-  CasiumDevToolsPanel: "CasiumDevToolsPageScript"
+  CasiumDevToolsPageScript: 'CasiumDevToolsPanel',
+  CasiumDevToolsPanel: 'CasiumDevToolsPageScript'
 };
 
 const broadcast = (msg: {}) => {
@@ -18,6 +18,9 @@ const broadcast = (msg: {}) => {
     const dest = ports[source];
 
     if (!dest) {
+      console.log(`%c[Relay Error]: No port defined for ${source}`, "font-weight: bold; color: #cc2900;");
+      queues[channels[source]] = queues[channels[source]] || [];
+      queues[channels[source]].push(msg);
       return;
     }
 
@@ -37,7 +40,7 @@ const senderId = (sender: browser.runtime.Port) => sender.sender && sender.sende
 // DevTools / page connection
 browser.runtime.onConnect.addListener(port => {
 
-  console.log("%c[Client Connected]: " + port.name, "font-weight: bold; color: #2eb82e;", port);
+  console.log(`%c[Client Connected]: ${port.name}`, "font-weight: bold; color: #2eb82e;", port);
   ports[port.name] = port;
 
   if (queues[port.name] && queues[port.name].length) {
@@ -46,7 +49,7 @@ browser.runtime.onConnect.addListener(port => {
   }
 
   const portListener = function(message: any, sender: browser.runtime.Port) {
-    console.log("%c[Client Message]: " + sender.name, "font-weight: bold; color: #e6b800;", message);
+    console.log(`%c[Client Message]: ${sender.name}`, 'font-weight: bold; color: #e6b800;', message);
 
     if (!channels[sender.name]) {
       throw new Error('NO CHANNEL DEFINED FOR SENDER');
@@ -66,7 +69,7 @@ browser.runtime.onConnect.addListener(port => {
 
   port.postMessage({ info: "Client connected to background", name: port.name });
 
-  port.onDisconnect.addListener(function() {
+  port.onDisconnect.addListener(() => {
     broadcast({ state: 'disconnected' });
     console.log(`%c[Client Disconnected]: ${port.name}`, "font-weight: bold; color: #cc2900;");
     port.onMessage.removeListener(portListener as any);
