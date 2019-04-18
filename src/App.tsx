@@ -120,7 +120,7 @@ export class App extends React.Component<{}, State> {
 
     window.LISTENERS.push([
       where({ from: equals('CasiumDevToolsInstrumenter'), state: isNil }),
-      message => {
+      (message: SerializedMessage) => {
         this.state.initClock && clearInterval(this.state.initClock);
         this.setState({ initClock: null });
 
@@ -132,13 +132,13 @@ export class App extends React.Component<{}, State> {
 
     window.LISTENERS.push([
       where({ from: equals('CasiumDevToolsPanel'), state: isNil }),
-      message => this.state.haltForReplay && this.setState({ haltForReplay: false })
+      (message: SerializedMessage) => this.state.haltForReplay && this.setState({ haltForReplay: false })
     ]);
 
     window.LISTENERS.push([
       whereEq({ from: 'CasiumDevToolsInstrumenter', state: 'initialized' }),
 
-      (msg) => {
+      (msg: SerializedMessage) => {
         this.state.active.replay && this.setState({ haltForReplay: true });
         this.state.active.clearOnReload && this.clearMessages();
         this.state.active.replay && window.messageClient({ selected: this.state.selected[0] });

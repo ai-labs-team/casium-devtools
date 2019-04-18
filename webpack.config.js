@@ -17,7 +17,6 @@ module.exports = {
     'background': './src/background.ts',
     'devtools': './src/devtools.ts',
     'panel': './src/panel.ts',
-    'messaging': './src/messaging.ts'
   },
 
   resolve: {
