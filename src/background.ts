@@ -32,48 +32,67 @@ const broadcast = (msg: {}) => {
   }
 }
 
+/**
+ * If source port's name contains a Tab ID, use the source port name verbatim, otherwise infer the source port from
+ * `sender.tab.id`.
+ */
+const portId = (port: browser.runtime.Port) => {
+  if (port.name.indexOf('@') > -1) {
+    return port.name;
+  }
+
+  if (port.sender && port.sender.tab && port.sender.tab.id !== undefined) {
+    return `${port.name}@${port.sender.tab.id}`;
+  }
+
+  throw new Error('Port does not contain `@<tabId>` in name or have `sender.tab.id`');
+}
+
 // DevTools / page connection
-browser.runtime.onConnect.addListener(port => {
+browser.runtime.onConnect.addListener(sourcePort => {
+  const sourceId = portId(sourcePort);
+  const [sourceName, sourceTabId] = sourceId.split('@');
 
-  console.log("%c[Client Connected]: " + port.name, "font-weight: bold; color: #2eb82e;", port);
-  ports[port.name] = port;
+  console.log("%c[Client Connected]: " + sourceId, "font-weight: bold; color: #2eb82e;", sourcePort);
+  ports[sourceId] = sourcePort;
 
-  if (queues[port.name] && queues[port.name].length) {
-    queues[port.name].forEach(port.postMessage.bind(port));
-    queues[port.name] = [];
+  if (queues[sourceId] && queues[sourceId].length) {
+    queues[sourceId].forEach(sourcePort.postMessage.bind(sourcePort));
+    queues[sourceId] = [];
   }
 
   const portListener = function(message: any, sender: browser.runtime.Port, sendResponse: (response?: any) => void) {
-    console.log("%c[Client Message]: " + sender.name, "font-weight: bold; color: #e6b800;", message);
+    console.log("%c[Client Message]: From " + sourceId, "font-weight: bold; color: #e6b800;", message);
 
-    if (!channels[sender.name]) {
+    if (!channels[sourceName]) {
       throw new Error('NO CHANNEL DEFINED FOR SENDER');
     }
 
-    const destination = channels[sender.name], port = ports[destination];
+    const destinationName = channels[sourceName];
+    const destinationId = `${destinationName}@${sourceTabId}`;
+    const destinationPort = ports[destinationId];
 
-    if (!port) {
-      console.log("%c[Message Not Relayed]", "font-weight: bold; color: #cc2900;", message, { ports, sender });
-      queues[destination] = queues[destination] || [];
-      queues[destination].push(message);
+    if (!destinationPort) {
+      console.log("%c[Message Queued]: To " + destinationId, "font-weight: bold; color: #cc2900;", message, { ports, sender });
+
+      if (!queues[destinationId]) {
+        queues[destinationId] = [];
+      }
+
+      queues[destinationId].push(message);
       return;
     }
-    console.log("%c[Message Relayed]: " + destination, "font-weight: bold; color: #e6b800;", message, { ports, sender });
-    port.postMessage(message);
 
-    if (message.tabId && message.scriptToInject) {
-      browser.tabs.executeScript(message.tabId, { file: message.scriptToInject });
-    }
+    console.log("%c[Message Relayed]: To " + destinationId, "font-weight: bold; color: #2eb82e;", message, { ports, sender });
+    destinationPort.postMessage(message);
   }
 
-  port.postMessage({ info: "Client connected to background", name: port.name });
-
-  port.onDisconnect.addListener(function() {
+  sourcePort.onDisconnect.addListener(function() {
     broadcast({ state: 'disconnected' });
-    console.log(`%c[Client Disconnected]: ${port.name}`, "font-weight: bold; color: #cc2900;");
-    (port.onMessage.removeListener as any)(portListener);
-    delete ports[port.name];
+    console.log(`%c[Client Disconnected]: ${sourceId}`, "font-weight: bold; color: #cc2900;");
+    sourcePort.onMessage.removeListener(portListener as any);
+    delete ports[sourceId];
   });
 
-  (port.onMessage.addListener as any)(portListener);
+  sourcePort.onMessage.addListener(portListener as any);
 });
