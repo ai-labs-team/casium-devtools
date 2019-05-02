@@ -205,9 +205,7 @@ export class App extends React.Component<{}, State> {
               name="file-text-o"
               title="Save Message Log"
               className="tool-button save-msg-button"
-              onClick={() => {
-                download({ data: JSON.stringify(messages, null, 2), filename: 'message-log.json' });
-              }}
+              onClick={this._export}
             />
             <span
               className="fa-stack tool-button import-msg-button"
@@ -347,6 +345,16 @@ export class App extends React.Component<{}, State> {
     );
   }
 
+  protected _export = () =>
+    download({
+      data: JSON.stringify({
+        version: '1',
+        initial: this.state.initial,
+        messages: this.state.messages
+      }, null, 2),
+      filename: 'message-log.json'
+    })
+
   /**
    * Use `importLog` to replay a message log from a file on disk, then set
    * `state.messages` to display the Messages contained in the log, and reset
@@ -354,8 +362,9 @@ export class App extends React.Component<{}, State> {
    */
   protected _import = () =>
     importLog()
-      .then(messages => this.setState({
+      .then(({ initial, messages }) => this.setState({
+        initial,
         messages,
         selected: []
-      }))
+      }));
 }

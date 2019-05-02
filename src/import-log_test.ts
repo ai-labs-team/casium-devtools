@@ -11,41 +11,24 @@ declare var global: {
   }
 }
 
+const initial = {};
+
 const messages = [{
-  path: [],
-  prev: {},
-  next: {
-    counter: { value: 0 },
-    message: { title: '' }
-  }
+  id: '0',
+  message: '0',
+  delta: [[['counter'], 0], [['flag'], false]]
 }, {
-  path: ['counter'],
-  prev: {
-    counter: { value: 0 },
-    message: { title: '' }
-  },
-  next: { value: 10 }
+  id: '1',
+  message: '1',
+  delta: [[['counter'], 1]]
 }, {
-  path: ['message'],
-  prev: {
-    counter: { value: 10 },
-    message: { title: '' }
-  },
-  next: { title: 'hello' }
+  id: '2',
+  message: '2',
+  delta: [[['flag'], true]]
 }, {
-  path: ['counter'],
-  prev: {
-    counter: { value: 10 },
-    message: { title: 'hello' }
-  },
-  next: { value: 9 }
-}, {
-  path: ['message'],
-  prev: {
-    counter: { value: 9 },
-    message: { title: 'hello' }
-  },
-  next: { title: 'goodbye' }
+  id: '3',
+  message: '3',
+  delta: null
 }];
 
 describe('importLog', () => {
@@ -64,7 +47,11 @@ describe('importLog', () => {
 
     (util.upload as sinon.SinonStub).resolves({
       filename: 'messages.json',
-      content: JSON.stringify(messages)
+      content: JSON.stringify({
+        version: '1',
+        initial,
+        messages
+      })
     });
 
     importLog.importLog();
@@ -72,7 +59,10 @@ describe('importLog', () => {
     setImmediate(() => {
       expect(global.window.messageClient.args).to.deep.equal([
         [{
-          selected: messages[4]
+          setState: {
+            counter: 1,
+            flag: true
+          }
         }]
       ]);
 
@@ -127,7 +117,7 @@ describe('importLog', () => {
             type: 'error',
             title: 'Failed to replay message log',
             message: 'The file that you attempted to import could not be replayed:',
-            code: "Error: Log 'empty.json' does not contain any replayable message(s)"
+            code: 'Error: Unknown Message Log format/version'
           }]
         ]);
 
