@@ -84,6 +84,8 @@ context('when a new message is received', () => {
   });
 });
 
+const initial = {};
+
 const messages = [{
   id: '0',
   message: '0',
@@ -225,13 +227,13 @@ describe('download button', () => {
     sinon.stub(util, 'download')
   });
 
-  it('downloads a JSON representation of message history on click', () => {
+  it('downloads a JSON representation of initial state and message history on click', () => {
     const wrapper = shallow(<App />);
-    wrapper.setState({ messages });
+    wrapper.setState({ initial, messages });
     wrapper.find('.save-msg-button').simulate('click');
 
     expect((util.download as sinon.SinonSpy).calledWith({
-      data: JSON.stringify(messages, null, 2),
+      data: JSON.stringify({ version: '1', initial, messages }, null, 2),
       filename: 'message-log.json'
     })).to.equal(true);
   });

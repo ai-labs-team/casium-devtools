@@ -1,8 +1,5 @@
-import { last } from 'ramda';
-
-import { upload } from './util';
+import { applyDeltas, upload } from './util';
 import { display } from './Notifier';
-import { SerializedMessage } from './instrumenter';
 
 /**
  * 'Replays' a message log by using the 'time travel' feature to set the
@@ -11,24 +8,24 @@ import { SerializedMessage } from './instrumenter';
 export const importLog = () =>
   upload({ type: 'application/json' })
     .then(({ filename, content }) => {
-      const messages: SerializedMessage[] = JSON.parse(content);
+      const log: any = JSON.parse(content);
 
-      // Determine the last message for each path and replay it using Time Travel
-      const toReplay = last(messages);
+      if (log.version === '1') {
+        const { initial, messages } = log;
+        const setState = applyDeltas(initial, messages);
 
-      if (!toReplay) {
-        throw Error(`Log '${filename}' does not contain any replayable message(s)`);
+        window.messageClient({ setState });
+
+        display({
+          type: 'success',
+          title: 'Successfully replayed message log',
+          message: `Application state now matches the last message recorded in log '${filename}'`
+        });
+
+        return { initial, messages };
       }
 
-      window.messageClient({ selected: toReplay });
-
-      display({
-        type: 'success',
-        title: 'Successfully replayed message log',
-        message: `Application state now matches the last message recorded in log '${filename}'`
-      });
-
-      return messages;
+      throw new Error('Unknown Message Log format/version');
     })
     .catch(err => {
       display({
