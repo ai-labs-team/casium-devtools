@@ -102,7 +102,7 @@ export class MessageView extends React.Component<Props, State> {
       const relay = (useDependencyTrace && dependencyTrace) ? deepPick(msg.relay, dependencyTrace.relay) : msg.relay;
       const data = (useDependencyTrace && dependencyTrace) ? deepPick(msg.data || {}, dependencyTrace.message) : msg.data || {};
 
-      const relayItem = Object.keys(relay).length > 0 ? [
+      const relayItem = Object.keys(relay || {}).length > 0 ? [
         <div className="panel-label" key="relay">Relay</div>,
         <ObjectInspector data={relay} expandLevel={0} key="relay-inspector" />
       ] : null;

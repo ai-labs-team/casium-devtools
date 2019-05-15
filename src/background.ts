@@ -61,7 +61,7 @@ browser.runtime.onConnect.addListener(sourcePort => {
     queues[sourceId] = [];
   }
 
-  const portListener = function(message: any, sender: browser.runtime.Port, sendResponse: (response?: any) => void) {
+  const portListener = function(message: any, sender: browser.runtime.Port) {
     console.log("%c[Client Message]: From " + sourceId, "font-weight: bold; color: #e6b800;", message);
 
     if (!channels[sourceName]) {
