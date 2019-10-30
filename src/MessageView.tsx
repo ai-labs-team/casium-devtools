@@ -98,25 +98,33 @@ export class MessageView extends React.Component<Props, State> {
     const { relativeTime, dependencyTraces } = this.state;
 
     const items = selected.map((msg, index) => {
-      const dependencyTrace = dependencyTraces[index];
-      const relay = (useDependencyTrace && dependencyTrace) ? deepPick(msg.relay, dependencyTrace.relay) : msg.relay;
-      const data = (useDependencyTrace && dependencyTrace) ? deepPick(msg.data || {}, dependencyTrace.message) : msg.data || {};
+      try {
+        const dependencyTrace = dependencyTraces[index];
+        const relay = (useDependencyTrace && dependencyTrace) ? deepPick(msg.relay, dependencyTrace.relay) : msg.relay;
+        const data = (useDependencyTrace && dependencyTrace) ? deepPick(msg.data || {}, dependencyTrace.message) : msg.data || {};
 
-      const relayItem = Object.keys(relay || {}).length > 0 ? [
-        <div className="panel-label" key="relay">Relay</div>,
-        <ObjectInspector data={relay} expandLevel={0} key="relay-inspector" />
-      ] : null;
+        const relayItem = Object.keys(relay || {}).length > 0 ? [
+          <div className="panel-label" key="relay">Relay</div>,
+          <ObjectInspector data={relay} expandLevel={0} key="relay-inspector" />
+        ] : null;
 
-      return (
-        <div className="message" key={msg.id}>
-          <MessageHeading msg={msg} relativeTime={relativeTime} onToggle={this._toggleRelativeTime} />
-          <div className="message-properties">
-            <div className="panel-label">Data</div>
-            <ObjectInspector data={data} expandLevel={0} />
-            {relayItem}
+        return (
+          <div className="message" key={msg.id}>
+            <MessageHeading msg={msg} relativeTime={relativeTime} onToggle={this._toggleRelativeTime} />
+            <div className="message-properties">
+              <div className="panel-label">Data</div>
+              <ObjectInspector data={data} expandLevel={0} />
+              {relayItem}
+            </div>
           </div>
-        </div>
-      )
+        );
+      } catch (e) {
+        return (
+          <div className="error" key={msg.id}>
+            Couldn't render message trace: {e.message}
+          </div>
+        )
+      }
     });
 
     return (

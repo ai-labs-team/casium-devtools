@@ -102,7 +102,7 @@ export class App extends React.Component<{}, State> {
       timeTravel: false,
       clearOnReload: false,
       unitTest: false,
-      dependencyTrace: true,
+      dependencyTrace: false,
       prevState: false,
       diffState: true,
       nextState: true,
