@@ -16,7 +16,7 @@
   "dependencies": {
     "@fountainhead/react-json-delta-inspector": "1.2.0",
     "@warrenseymour/json-delta": "^1.0.2",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "copy-to-clipboard": "^3.0.8",
     "deep-freeze-strict": "^1.1.1",
     "enzyme-adapter-react-16": "^1.13.0",
